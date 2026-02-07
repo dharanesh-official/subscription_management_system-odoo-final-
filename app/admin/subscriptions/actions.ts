@@ -81,7 +81,63 @@ export async function createSubscription(formData: FormData) {
 
 export async function updateSubscriptionStatus(id: string, newStatus: string) {
     const supabase = await createClient()
+
+    // 1. Update Status
     const { error } = await supabase.from('subscriptions').update({ status: newStatus }).eq('id', id)
-    if (error) console.error('Update subscription error:', error)
+    if (error) {
+        console.error('Update subscription error:', error)
+        return
+    }
+
+    // 2. Generate Invoice if moving to Confirmed/Active and no invoice exists
+    if (newStatus === 'confirmed' || newStatus === 'active') {
+        const { data: existingInvoice } = await supabase
+            .from('invoices')
+            .select('id')
+            .eq('subscription_id', id)
+            .maybeSingle() // Use maybeSingle to avoid 406 error if 0 rows
+
+        if (!existingInvoice) {
+            // Fetch Subscription + Plan details
+            const { data: sub } = await supabase
+                .from('subscriptions')
+                .select(`
+                    *,
+                    plans (
+                        amount
+                    )
+                `)
+                .eq('id', id)
+                .single()
+
+            if (sub && sub.plans) {
+                // @ts-ignore
+                const planAmount = Number(sub.plans.amount)
+
+                // Calculate Tax
+                const { data: taxes } = await supabase.from('taxes').select('percentage').eq('active', true)
+                const totalTaxPercent = taxes?.reduce((acc, t) => acc + Number(t.percentage), 0) || 0
+                const taxAmount = planAmount * (totalTaxPercent / 100)
+                const totalAmount = planAmount + taxAmount
+
+                const paymentTerms = sub.payment_terms || 7
+                const dueDate = new Date()
+                dueDate.setDate(dueDate.getDate() + paymentTerms)
+
+                // Create Invoice
+                const { error: invError } = await supabase.from('invoices').insert({
+                    subscription_id: sub.id,
+                    customer_id: sub.customer_id,
+                    amount_due: totalAmount,
+                    currency: 'usd',
+                    status: 'draft', // Initial invoice status
+                    due_date: dueDate.toISOString(),
+                })
+
+                if (invError) console.error('Auto-invoice generation error:', invError)
+            }
+        }
+    }
+
     revalidatePath('/admin/subscriptions')
 }
