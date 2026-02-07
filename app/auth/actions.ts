@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/utils/supabase/server'
 import { headers } from 'next/headers'
+import { sendWelcomeEmail } from '@/utils/mail'
 
 export async function login(formData: FormData) {
     const supabase = await createClient()
@@ -39,6 +40,7 @@ export async function login(formData: FormData) {
 
 export async function signup(formData: FormData) {
     const supabase = await createClient()
+    const origin = (await headers()).get('origin')
 
     const email = formData.get('email') as string
     const password = formData.get('password') as string
@@ -47,7 +49,7 @@ export async function signup(formData: FormData) {
 
     const fullName = `${firstName} ${lastName}`.trim()
 
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -55,12 +57,20 @@ export async function signup(formData: FormData) {
                 full_name: fullName,
                 role: 'customer' // Default role
             },
+            emailRedirectTo: `${origin}/auth/callback?flow=signup`
         },
     })
 
     if (error) {
         console.error("Signup Error:", error.message)
         return redirect(`/auth/signup?error=${encodeURIComponent(error.message)}`)
+    }
+
+    // If email confirmation is disabled, user is signed in immediately
+    if (data.session) {
+        sendWelcomeEmail(email, fullName).catch(e => console.error(e))
+        revalidatePath('/', 'layout')
+        redirect('/dashboard')
     }
 
     revalidatePath('/', 'layout')
@@ -74,7 +84,7 @@ export async function loginWithGoogle() {
     const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-            redirectTo: `${origin}/auth/callback`,
+            redirectTo: `${origin}/auth/callback?flow=google-signup`,
             queryParams: {
                 access_type: 'offline',
                 prompt: 'consent',
@@ -97,4 +107,37 @@ export async function logout() {
     await supabase.auth.signOut()
     revalidatePath('/', 'layout')
     redirect('/')
+}
+
+export async function forgotPassword(formData: FormData) {
+    const supabase = await createClient()
+    const email = formData.get('email') as string
+    const origin = (await headers()).get('origin')
+
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${origin}/auth/callback?next=/auth/update-password`,
+    })
+
+    if (error) {
+        console.error("Forgot Password Error:", error.message)
+        return redirect(`/auth/forgot-password?error=${encodeURIComponent(error.message)}`)
+    }
+
+    return redirect('/auth/forgot-password?message=Check your email for the reset link')
+}
+
+export async function updatePassword(formData: FormData) {
+    const supabase = await createClient()
+    const password = formData.get('password') as string
+
+    const { error } = await supabase.auth.updateUser({
+        password: password
+    })
+
+    if (error) {
+        return redirect(`/auth/update-password?error=${encodeURIComponent(error.message)}`)
+    }
+
+    revalidatePath('/', 'layout')
+    redirect('/dashboard')
 }
