@@ -46,3 +46,39 @@ export async function createCustomer(formData: FormData) {
     revalidatePath('/admin/customers')
     redirect('/admin/customers')
 }
+
+export async function updateCustomer(id: string, formData: FormData) {
+    const supabase = await createClient()
+
+    const name = formData.get('name') as string
+    const email = formData.get('email') as string
+    const phone = formData.get('phone') as string
+    const street = formData.get('street') as string
+    const city = formData.get('city') as string
+    const zip = formData.get('zip') as string
+    const country = formData.get('country') as string
+
+    if (!name || !email) {
+        return redirect(`/admin/customers/${id}/edit?error=Name and email are required`)
+    }
+
+    const { error } = await supabase.from('customers').update({
+        name,
+        email,
+        phone,
+        address: {
+            street,
+            city,
+            zip,
+            country
+        }
+    }).eq('id', id)
+
+    if (error) {
+        console.error('Update customer error:', error)
+        return redirect(`/admin/customers/${id}/edit?error=Could not update customer`)
+    }
+
+    revalidatePath('/admin/customers')
+    redirect('/admin/customers')
+}

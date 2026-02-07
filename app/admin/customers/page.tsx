@@ -55,7 +55,9 @@ export default async function CustomersPage() {
                                     <TableCell>{customer.phone || '-'}</TableCell>
                                     <TableCell>{customer.street || '-'}</TableCell>
                                     <TableCell>
-                                        <Button variant="ghost" size="sm" disabled>Edit</Button>
+                                        <Link href={`/admin/customers/${customer.id}/edit`}>
+                                            <Button variant="ghost" size="sm">Edit</Button>
+                                        </Link>
                                     </TableCell>
                                 </TableRow>
                             ))
