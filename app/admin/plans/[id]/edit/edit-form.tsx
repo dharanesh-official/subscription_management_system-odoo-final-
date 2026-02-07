@@ -81,6 +81,17 @@ export default function EditPlanForm({ plan }: { plan: any }) {
                     </div>
                 </div>
 
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                        <Label htmlFor="start_date">Start Date</Label>
+                        <Input id="start_date" name="start_date" type="date" defaultValue={plan.start_date} />
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="end_date">End Date</Label>
+                        <Input id="end_date" name="end_date" type="date" defaultValue={plan.end_date} />
+                    </div>
+                </div>
+
                 <div className="space-y-3 pt-2">
                     <Label>Plan Options</Label>
                     <div className="grid grid-cols-2 gap-4 border p-4 rounded-md">

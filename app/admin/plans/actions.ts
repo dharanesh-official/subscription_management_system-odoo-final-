@@ -19,6 +19,8 @@ export async function createPlan(formData: FormData) {
     const closable = formData.get('closable') === 'on'
     const pausable = formData.get('pausable') === 'on'
     const renewable = formData.get('renewable') === 'on'
+    const startDate = formData.get('start_date') as string
+    const endDate = formData.get('end_date') as string
 
     if (!productId || !name || isNaN(amount)) {
         return redirect('/admin/plans/new?error=Missing required fields')
@@ -36,6 +38,8 @@ export async function createPlan(formData: FormData) {
         closable,
         pausable,
         renewable,
+        start_date: startDate || null,
+        end_date: endDate || null,
         currency: 'inr'
     })
 
@@ -61,6 +65,8 @@ export async function updatePlan(id: string, formData: FormData) {
     const closable = formData.get('closable') === 'on'
     const pausable = formData.get('pausable') === 'on'
     const renewable = formData.get('renewable') === 'on'
+    const startDate = formData.get('start_date') as string
+    const endDate = formData.get('end_date') as string
 
     const { data: updated, error } = await supabase.from('plans').update({
         name,
@@ -73,6 +79,8 @@ export async function updatePlan(id: string, formData: FormData) {
         closable,
         pausable,
         renewable,
+        start_date: startDate || null,
+        end_date: endDate || null,
     }).eq('id', id).select()
 
     if (error || !updated || updated.length === 0) {

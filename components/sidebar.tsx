@@ -13,7 +13,10 @@ import {
     Wallet,
     LogOut,
     Zap,
-    Briefcase
+    Briefcase,
+    IndianRupee,
+    FileText,
+    Percent
 } from "lucide-react"
 import { createClient } from "@/utils/supabase/server"
 
@@ -89,11 +92,32 @@ export default async function Sidebar({ role }: { role: 'admin' | 'customer' }) 
                                     Customers
                                 </Link>
                                 <Link
-                                    href="/admin/invoices"
+                                    href="/admin/payments"
                                     className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
                                 >
-                                    <Wallet className="h-4 w-4" />
-                                    Invoices
+                                    <IndianRupee className="h-4 w-4" />
+                                    Payments
+                                </Link>
+                                <Link
+                                    href="/admin/users"
+                                    className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
+                                >
+                                    <Users className="h-4 w-4" />
+                                    Internal Users
+                                </Link>
+                                <Link
+                                    href="/admin/quotations"
+                                    className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
+                                >
+                                    <FileText className="h-4 w-4" />
+                                    Quotations
+                                </Link>
+                                <Link
+                                    href="/admin/taxes"
+                                    className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
+                                >
+                                    <Percent className="h-4 w-4" />
+                                    Taxes
                                 </Link>
                                 <Link
                                     href="/admin/settings"

@@ -85,3 +85,15 @@ export async function sendInvoiceManually(invoiceId: string) {
         return { success: false, error: String(error) }
     }
 }
+
+export async function cancelInvoice(id: string) {
+    const supabase = await createClient()
+    const { error } = await supabase.from('invoices').update({ status: 'cancelled' }).eq('id', id)
+    if (error) {
+        console.error('Cancel invoice error:', error)
+        return { error: error.message }
+    }
+    revalidatePath(`/admin/invoices/${id}`)
+    revalidatePath('/admin/invoices')
+    return { success: true }
+}
