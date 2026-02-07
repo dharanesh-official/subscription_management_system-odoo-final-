@@ -19,6 +19,7 @@ export async function createPlan(formData: FormData) {
     const closable = formData.get('closable') === 'on'
     const pausable = formData.get('pausable') === 'on'
     const renewable = formData.get('renewable') === 'on'
+    const visibility = formData.get('visibility') as string || 'private'
     const startDate = formData.get('start_date') as string
     const endDate = formData.get('end_date') as string
 
@@ -38,6 +39,7 @@ export async function createPlan(formData: FormData) {
         closable,
         pausable,
         renewable,
+        visibility,
         start_date: startDate || null,
         end_date: endDate || null,
         currency: 'inr'
@@ -65,6 +67,7 @@ export async function updatePlan(id: string, formData: FormData) {
     const closable = formData.get('closable') === 'on'
     const pausable = formData.get('pausable') === 'on'
     const renewable = formData.get('renewable') === 'on'
+    const visibility = formData.get('visibility') as string || 'private'
     const startDate = formData.get('start_date') as string
     const endDate = formData.get('end_date') as string
 
@@ -79,6 +82,7 @@ export async function updatePlan(id: string, formData: FormData) {
         closable,
         pausable,
         renewable,
+        visibility,
         start_date: startDate || null,
         end_date: endDate || null,
     }).eq('id', id).select()

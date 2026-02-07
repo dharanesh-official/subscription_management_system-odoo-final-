@@ -30,7 +30,7 @@ export function Navbar() {
                 {/* Desktop Nav */}
                 <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
                     <Link className="transition-colors hover:text-foreground/80 text-foreground/60" href="#features">Features</Link>
-                    <Link className="transition-colors hover:text-foreground/80 text-foreground/60" href="#pricing">Pricing</Link>
+                    <Link className="transition-colors hover:text-foreground/80 text-foreground/60" href="/pricing">Pricing</Link>
                 </nav>
 
                 {/* Desktop Auth */}
@@ -57,7 +57,7 @@ export function Navbar() {
                                 <Link href="#features" className="text-lg font-medium hover:text-primary transition-colors" onClick={() => setIsOpen(false)}>
                                     Features
                                 </Link>
-                                <Link href="#pricing" className="text-lg font-medium hover:text-primary transition-colors" onClick={() => setIsOpen(false)}>
+                                <Link href="/pricing" className="text-lg font-medium hover:text-primary transition-colors" onClick={() => setIsOpen(false)}>
                                     Pricing
                                 </Link>
                             </div>

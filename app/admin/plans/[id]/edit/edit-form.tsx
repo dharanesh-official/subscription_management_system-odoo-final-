@@ -12,6 +12,7 @@ import {
     SelectTrigger,
     SelectValue
 } from "@/components/ui/select"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { useState } from "react"
 import Link from "next/link"
 import { Loader2 } from "lucide-react"
@@ -95,6 +96,20 @@ export default function EditPlanForm({ plan }: { plan: any }) {
                         <Label htmlFor="end_date">End Date</Label>
                         <Input id="end_date" name="end_date" type="date" defaultValue={plan.end_date} />
                     </div>
+                </div>
+
+                <div className="grid gap-2">
+                    <Label>Visibility</Label>
+                    <RadioGroup defaultValue={plan.visibility || "private"} name="visibility" className="flex gap-4">
+                        <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="public" id="public" />
+                            <Label htmlFor="public" className="font-normal">Public (Visible to all users)</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="private" id="private" />
+                            <Label htmlFor="private" className="font-normal">Private (Admin/Invite only)</Label>
+                        </div>
+                    </RadioGroup>
                 </div>
 
                 <div className="space-y-3 pt-2">
