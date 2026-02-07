@@ -1,5 +1,6 @@
 
 import { createClient } from "@/utils/supabase/server"
+import { revalidatePath } from "next/cache"
 import { Button } from "@/components/ui/button"
 import {
     Table,
@@ -62,17 +63,45 @@ export default async function InvoicesPage() {
                                 <TableCell className="font-medium">${Number(inv.amount_due).toFixed(2)}</TableCell>
                                 <TableCell>{new Date(inv.due_date).toLocaleDateString()}</TableCell>
                                 <TableCell>
-                                    <Badge variant={inv.status === 'paid' ? 'default' : inv.status === 'overdue' ? 'destructive' : 'secondary'}>
+                                    <Badge variant={
+                                        inv.status === 'paid' ? 'default' :
+                                            inv.status === 'confirmed' ? 'default' :
+                                                inv.status === 'overdue' ? 'destructive' :
+                                                    'secondary'
+                                    } className={
+                                        inv.status === 'paid' ? 'bg-green-600 hover:bg-green-700' :
+                                            inv.status === 'confirmed' ? 'bg-blue-600 hover:bg-blue-700' :
+                                                ''
+                                    }>
                                         {inv.status}
                                     </Badge>
                                 </TableCell>
                                 <TableCell>
-                                    <Link href={`/admin/invoices/${inv.id}`}>
-                                        <Button variant="ghost" size="icon">
-                                            <MousePointerClick className="h-4 w-4" />
-                                            <span className="sr-only">View</span>
-                                        </Button>
-                                    </Link>
+                                    <div className="flex gap-2">
+                                        {inv.status === 'draft' && (
+                                            <form action={async () => {
+                                                'use server'
+                                                const supabase = await createClient()
+                                                await supabase.from('invoices').update({ status: 'confirmed' }).eq('id', inv.id)
+                                                revalidatePath('/admin/invoices')
+                                            }}>
+                                                <Button size="sm" variant="default">Confirm</Button>
+                                            </form>
+                                        )}
+                                        {(inv.status === 'confirmed' || inv.status === 'sent') && (
+                                            <form action={async () => {
+                                                'use server'
+                                                const supabase = await createClient()
+                                                await supabase.from('invoices').update({ status: 'paid' }).eq('id', inv.id)
+                                                revalidatePath('/admin/invoices')
+                                            }}>
+                                                <Button size="sm" className="bg-green-600 hover:bg-green-700">Mark Paid</Button>
+                                            </form>
+                                        )}
+                                        <Link href={`/admin/invoices/${inv.id}`}>
+                                            <Button variant="ghost" size="sm">View</Button>
+                                        </Link>
+                                    </div>
                                 </TableCell>
                             </TableRow>
                         )))}

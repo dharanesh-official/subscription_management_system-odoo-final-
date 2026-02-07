@@ -1,5 +1,6 @@
 
 import { createClient } from "@/utils/supabase/server"
+import { revalidatePath } from "next/cache"
 import { Button } from "@/components/ui/button"
 import {
     Table,
@@ -65,7 +66,17 @@ export default async function SubscriptionsPage() {
                                     <div className="text-sm text-muted-foreground">{sub.plans?.name}</div>
                                 </TableCell>
                                 <TableCell>
-                                    <Badge variant={sub.status === 'active' ? 'default' : 'secondary'} className={sub.status === 'active' ? 'bg-green-600 hover:bg-green-700' : ''}>
+                                    <Badge variant={
+                                        sub.status === 'active' ? 'default' :
+                                            sub.status === 'confirmed' ? 'default' :
+                                                sub.status === 'closed' ? 'secondary' :
+                                                    'outline'
+                                    } className={
+                                        sub.status === 'active' ? 'bg-green-600 hover:bg-green-700' :
+                                            sub.status === 'confirmed' ? 'bg-blue-600 hover:bg-blue-700' :
+                                                sub.status === 'closed' ? 'bg-gray-600' :
+                                                    ''
+                                    }>
                                         {sub.status}
                                     </Badge>
                                 </TableCell>
@@ -77,10 +88,48 @@ export default async function SubscriptionsPage() {
                                 </TableCell>
                                 <TableCell className="font-medium">${sub.plans?.amount} / {sub.plans?.interval}</TableCell>
                                 <TableCell>
-                                    <Button variant="ghost" size="icon">
-                                        <MoreHorizontal className="h-4 w-4" />
-                                        <span className="sr-only">Actions</span>
-                                    </Button>
+                                    <div className="flex gap-2">
+                                        {sub.status === 'draft' && (
+                                            <form action={async () => {
+                                                'use server'
+                                                const supabase = await createClient()
+                                                await supabase.from('subscriptions').update({ status: 'quotation' }).eq('id', sub.id)
+                                                revalidatePath('/admin/subscriptions')
+                                            }}>
+                                                <Button size="sm" variant="outline">Convert to Quotation</Button>
+                                            </form>
+                                        )}
+                                        {sub.status === 'quotation' && (
+                                            <form action={async () => {
+                                                'use server'
+                                                const supabase = await createClient()
+                                                await supabase.from('subscriptions').update({ status: 'confirmed' }).eq('id', sub.id)
+                                                revalidatePath('/admin/subscriptions')
+                                            }}>
+                                                <Button size="sm" variant="default">Confirm</Button>
+                                            </form>
+                                        )}
+                                        {sub.status === 'confirmed' && (
+                                            <form action={async () => {
+                                                'use server'
+                                                const supabase = await createClient()
+                                                await supabase.from('subscriptions').update({ status: 'active' }).eq('id', sub.id)
+                                                revalidatePath('/admin/subscriptions')
+                                            }}>
+                                                <Button size="sm" className="bg-green-600 hover:bg-green-700">Activate</Button>
+                                            </form>
+                                        )}
+                                        {sub.status === 'active' && (
+                                            <form action={async () => {
+                                                'use server'
+                                                const supabase = await createClient()
+                                                await supabase.from('subscriptions').update({ status: 'closed' }).eq('id', sub.id)
+                                                revalidatePath('/admin/subscriptions')
+                                            }}>
+                                                <Button size="sm" variant="destructive">Close</Button>
+                                            </form>
+                                        )}
+                                    </div>
                                 </TableCell>
                             </TableRow>
                         )))}
