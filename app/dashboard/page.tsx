@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
 
+export const dynamic = 'force-dynamic'
+
 export default async function CustomerDashboard() {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
@@ -12,7 +14,6 @@ export default async function CustomerDashboard() {
     if (!user) return <div>Please log in</div>
 
     // Find customer profile linked to this user
-    // We assume email matching for hackathon simplicity if profile_id not set
     const { data: customer } = await supabase.from('customers').select('id, name').eq('email', user.email || '').single()
 
     let subscription = null
@@ -81,7 +82,7 @@ export default async function CustomerDashboard() {
                                 </div>
                                 <div>
                                     <p className="text-sm text-muted-foreground">Amount</p>
-                                    <p className="font-medium mt-1">${subscription.plans?.amount} / {subscription.plans?.interval}</p>
+                                    <p className="font-medium mt-1">₹{subscription.plans?.amount} / {subscription.plans?.interval}</p>
                                 </div>
                             </div>
                         ) : (
@@ -126,7 +127,7 @@ export default async function CustomerDashboard() {
                                         <span className="text-xs text-muted-foreground">{new Date(inv.created_at).toLocaleDateString()}</span>
                                     </div>
                                     <div className="flex items-center gap-4">
-                                        <p className="font-mono text-sm">${Number(inv.amount_due).toFixed(2)}</p>
+                                        <p className="font-mono text-sm">₹{Number(inv.amount_due).toFixed(2)}</p>
                                         <Badge variant={inv.status === 'paid' ? 'outline' : 'destructive'} className={inv.status === 'paid' ? 'text-green-600 border-green-600' : ''}>
                                             {inv.status}
                                         </Badge>

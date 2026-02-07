@@ -1,6 +1,8 @@
 
 import { createClient } from "@/utils/supabase/server"
 import { notFound } from "next/navigation"
+
+export const dynamic = 'force-dynamic'
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { formatCurrency } from "@/lib/utils"
