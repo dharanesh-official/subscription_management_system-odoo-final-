@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/select"
 import { useState } from "react"
 import Link from "next/link"
+import { formatCurrency } from "@/lib/utils"
 
 export default function CreateSubscriptionForm({ customers, plans }: { customers: any[], plans: any[] }) {
     const [loading, setLoading] = useState(false)
@@ -24,6 +25,12 @@ export default function CreateSubscriptionForm({ customers, plans }: { customers
 
     const selectedPlan = plans.find(p => p.id === planId)
     const selectedCustomer = customers.find(c => c.id === customerId)
+
+    // Calculate Estimates
+    const amount = Number(selectedPlan?.amount || 0)
+    const taxRate = 0.18 // Estimated GST 18% as per Indian Rules logic
+    const taxAmount = amount * taxRate
+    const totalAmount = amount + taxAmount
 
     return (
         <form action={createSubscription}>
@@ -63,7 +70,7 @@ export default function CreateSubscriptionForm({ customers, plans }: { customers
                                     </SelectTrigger>
                                     <SelectContent>
                                         {plans.length === 0 ? <SelectItem value="none" disabled>No active plans</SelectItem> : plans.map(p => (
-                                            <SelectItem key={p.id} value={p.id}>{p.products?.name} - {p.name} (${p.amount}/{p.interval})</SelectItem>
+                                            <SelectItem key={p.id} value={p.id}>{p.products?.name} - {p.name} ({formatCurrency(p.amount)}/{p.interval})</SelectItem>
                                         ))}
                                     </SelectContent>
                                 </Select>
@@ -120,9 +127,19 @@ export default function CreateSubscriptionForm({ customers, plans }: { customers
                                 <span className="text-muted-foreground">Plan:</span>
                                 <span className="font-medium truncate max-w-[150px]">{selectedPlan?.name || '-'}</span>
                             </div>
-                            <div className="border-t pt-4 flex justify-between items-center font-bold">
+                            <div className="border-t pt-2 mt-2 space-y-2">
+                                <div className="flex justify-between items-center text-sm">
+                                    <span>Subtotal:</span>
+                                    <span>{formatCurrency(amount)}</span>
+                                </div>
+                                <div className="flex justify-between items-center text-sm text-muted-foreground">
+                                    <span>GST (18% Est.):</span>
+                                    <span>{formatCurrency(taxAmount)}</span>
+                                </div>
+                            </div>
+                            <div className="border-t pt-4 flex justify-between items-center font-bold text-lg">
                                 <span>Total:</span>
-                                <span>${selectedPlan?.amount || '0.00'} <span className="text-xs font-normal text-muted-foreground">/ {selectedPlan?.interval}</span></span>
+                                <span>{formatCurrency(totalAmount)}</span>
                             </div>
                             <div className="pt-4">
                                 <Button type="submit" className="w-full" disabled={!customerId || !planId || loading}>
