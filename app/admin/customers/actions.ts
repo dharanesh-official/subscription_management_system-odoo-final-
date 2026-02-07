@@ -18,7 +18,7 @@ export async function createCustomer(formData: FormData) {
 
     // Simple validation
     if (!name || !email) {
-        return { error: 'Name and email are required' }
+        return redirect('/admin/customers/new?error=Name and email are required')
     }
 
     // Check if profile exists with this email to link automatically
