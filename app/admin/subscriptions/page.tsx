@@ -13,6 +13,7 @@ import {
 import Link from "next/link"
 import { Plus, MoreHorizontal, FileText, CheckCircle, XCircle } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
+import { formatCurrency } from "@/lib/utils"
 
 export default async function SubscriptionsPage() {
     const supabase = await createClient()
@@ -86,7 +87,15 @@ export default async function SubscriptionsPage() {
                                         {new Date(sub.current_period_end).toLocaleDateString()}
                                     </div>
                                 </TableCell>
-                                <TableCell className="font-medium">${sub.plans?.amount} / {sub.plans?.interval}</TableCell>
+                                <TableCell className="font-medium">
+                                    {formatCurrency(sub.plans?.amount * (sub.quantity || 1))}
+                                    <span className="text-xs text-muted-foreground block"> / {sub.plans?.interval}</span>
+                                    {(sub.quantity > 1) && (
+                                        <span className="text-xs text-muted-foreground block">
+                                            ({sub.quantity} x {formatCurrency(sub.plans?.amount)})
+                                        </span>
+                                    )}
+                                </TableCell>
                                 <TableCell>
                                     <div className="flex gap-2">
                                         {sub.status === 'draft' && (

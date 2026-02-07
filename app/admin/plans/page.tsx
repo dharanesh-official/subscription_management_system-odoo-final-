@@ -12,6 +12,7 @@ import {
 import Link from "next/link"
 import { Plus, MoreHorizontal } from "lucide-react"
 import { formatCurrency } from "@/lib/utils"
+import DeletePlanButton from "./delete-button"
 
 export default async function PlansPage() {
     const supabase = await createClient()
@@ -59,12 +60,12 @@ export default async function PlansPage() {
                                         {plan.active ? 'Active' : 'Inactive'}
                                     </span>
                                 </TableCell>
-                                <TableCell>
-                                    <Button variant="ghost" size="icon">
-                                        <MoreHorizontal className="h-4 w-4" />
-                                        <span className="sr-only">Actions</span>
-                                    </Button>
-                                </TableCell>
+                                <div className="flex gap-2">
+                                    <Link href={`/admin/plans/${plan.id}/edit`}>
+                                        <Button variant="ghost" size="sm">Edit</Button>
+                                    </Link>
+                                    <DeletePlanButton id={plan.id} />
+                                </div>
                             </TableRow>
                         )))}
                     </TableBody>

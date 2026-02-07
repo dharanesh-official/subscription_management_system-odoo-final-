@@ -48,6 +48,42 @@ export async function createPlan(formData: FormData) {
     redirect('/admin/plans')
 }
 
+export async function updatePlan(id: string, formData: FormData) {
+    const supabase = await createClient()
+
+    const name = formData.get('name') as string
+    const amount = Number(formData.get('amount'))
+    const interval = formData.get('interval') as string
+    const trialPeriod = Number(formData.get('trial_period_days') || 0)
+    const minQuantity = Number(formData.get('min_quantity') || 1)
+    const active = formData.get('active') === 'on'
+    const autoClose = formData.get('auto_close') === 'on'
+    const closable = formData.get('closable') === 'on'
+    const pausable = formData.get('pausable') === 'on'
+    const renewable = formData.get('renewable') === 'on'
+
+    const { data: updated, error } = await supabase.from('plans').update({
+        name,
+        amount,
+        interval,
+        trial_period_days: trialPeriod,
+        min_quantity: minQuantity,
+        active,
+        auto_close: autoClose,
+        closable,
+        pausable,
+        renewable,
+    }).eq('id', id).select()
+
+    if (error || !updated || updated.length === 0) {
+        console.error('Update plan error:', error || 'No permission/ID not found')
+        return redirect('/admin/plans?error=Update failed. Check permissions.')
+    }
+
+    revalidatePath('/admin/plans')
+    redirect('/admin/plans')
+}
+
 export async function deletePlan(id: string) {
     const supabase = await createClient()
 
@@ -55,7 +91,10 @@ export async function deletePlan(id: string) {
 
     if (error) {
         console.error('Delete plan error:', error)
+        if (error.code === '23503') return { error: 'Plan is used in subscriptions' }
+        return { error: 'Could not delete plan' }
     }
 
     revalidatePath('/admin/plans')
+    return { success: true }
 }
