@@ -12,6 +12,7 @@ export async function createSubscription(formData: FormData) {
     const planId = formData.get('plan_id') as string
     const status = formData.get('status') as string || 'draft'
     const startDate = formData.get('start_date') ? new Date(formData.get('start_date') as string) : new Date()
+    const paymentTerms = Number(formData.get('payment_terms') || 7)
 
     if (!customerId || !planId) {
         return redirect('/admin/subscriptions/new?error=Customer and Plan are required')
@@ -40,6 +41,7 @@ export async function createSubscription(formData: FormData) {
         status,
         current_period_start: startDate.toISOString(),
         current_period_end: endDate.toISOString(),
+        payment_terms: paymentTerms,
     }).select().single()
 
     if (error) {
@@ -47,9 +49,9 @@ export async function createSubscription(formData: FormData) {
         return redirect('/admin/subscriptions/new?error=Could not create subscription')
     }
 
-    // If status is active, generate the first invoice immediately
+    // If status is active, generate the first invoice immediately with tax calculation
     if (status === 'active' && subscription) {
-        // Fetch active taxes (basic implementation)
+        // Fetch active taxes
         const { data: taxes } = await supabase.from('taxes').select('percentage').eq('active', true)
 
         const totalTaxPercent = taxes?.reduce((acc, t) => acc + Number(t.percentage), 0) || 0
@@ -58,14 +60,14 @@ export async function createSubscription(formData: FormData) {
         const totalAmount = subAmount + taxAmount
 
         const dueDate = new Date()
-        dueDate.setDate(dueDate.getDate() + 7) // Due in 7 days by default
+        dueDate.setDate(dueDate.getDate() + paymentTerms)
 
         const { error: invError } = await supabase.from('invoices').insert({
             subscription_id: subscription.id,
             customer_id: customerId,
             amount_due: totalAmount,
             currency: 'usd',
-            status: 'sent', // Assume sent immediately
+            status: 'confirmed',
             due_date: dueDate.toISOString(),
         })
 

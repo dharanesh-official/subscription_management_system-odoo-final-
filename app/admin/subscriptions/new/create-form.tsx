@@ -88,6 +88,19 @@ export default function CreateSubscriptionForm({ customers, plans }: { customers
                                     <Input id="start_date" name="start_date" type="date" defaultValue={new Date().toISOString().split('T')[0]} />
                                 </div>
                             </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="payment_terms">Payment Terms (Days)</Label>
+                                <Input
+                                    id="payment_terms"
+                                    name="payment_terms"
+                                    type="number"
+                                    min="0"
+                                    defaultValue="7"
+                                    placeholder="Number of days until payment is due"
+                                />
+                                <p className="text-xs text-muted-foreground">Invoices will be due this many days after generation</p>
+                            </div>
                         </div>
                     </div>
                 </div>

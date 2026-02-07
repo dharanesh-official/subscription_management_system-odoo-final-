@@ -47,6 +47,20 @@ export async function signup(formData: FormData) {
     const firstName = formData.get('first-name') as string
     const lastName = formData.get('last-name') as string
 
+    // Password validation
+    if (password.length <= 8) {
+        return redirect(`/auth/signup?error=${encodeURIComponent('Password must be longer than 8 characters')}`)
+    }
+    if (!/[A-Z]/.test(password)) {
+        return redirect(`/auth/signup?error=${encodeURIComponent('Password must contain at least one uppercase letter')}`)
+    }
+    if (!/[a-z]/.test(password)) {
+        return redirect(`/auth/signup?error=${encodeURIComponent('Password must contain at least one lowercase letter')}`)
+    }
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+        return redirect(`/auth/signup?error=${encodeURIComponent('Password must contain at least one special character')}`)
+    }
+
     const fullName = `${firstName} ${lastName}`.trim()
 
     const { data, error } = await supabase.auth.signUp({

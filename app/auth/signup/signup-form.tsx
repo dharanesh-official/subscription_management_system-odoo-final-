@@ -7,9 +7,9 @@ import { Card, CardHeader, CardContent, CardTitle, CardDescription } from "@/com
 import Link from "next/link"
 import { signup } from "../actions"
 import { useSearchParams, useRouter } from "next/navigation"
-import { useRef, useEffect } from "react"
+import { useRef, useEffect, useState } from "react"
 import { toast } from "sonner"
-import { TriangleAlert } from "lucide-react"
+import { TriangleAlert, Check, X } from "lucide-react"
 import { motion } from "framer-motion"
 
 export default function SignupForm() {
@@ -17,6 +17,16 @@ export default function SignupForm() {
     const router = useRouter()
     const error = searchParams.get('error')
     const toastShownRef = useRef(false)
+    const [password, setPassword] = useState('')
+
+    const passwordRequirements = {
+        length: password.length > 8,
+        uppercase: /[A-Z]/.test(password),
+        lowercase: /[a-z]/.test(password),
+        special: /[!@#$%^&*(),.?":{}|<>]/.test(password),
+    }
+
+    const isPasswordValid = Object.values(passwordRequirements).every(Boolean)
 
     useEffect(() => {
         if (error && !toastShownRef.current) {
@@ -69,9 +79,41 @@ export default function SignupForm() {
                         </div>
                         <div className="grid gap-2">
                             <label htmlFor="password" className="text-sm font-medium leading-none">Password</label>
-                            <Input id="password" name="password" type="password" required className="bg-background/50" />
+                            <Input
+                                id="password"
+                                name="password"
+                                type="password"
+                                required
+                                className="bg-background/50"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                            />
+                            {password && (
+                                <div className="text-xs space-y-1 mt-2">
+                                    <div className={`flex items-center gap-2 ${passwordRequirements.length ? 'text-green-600' : 'text-muted-foreground'}`}>
+                                        {passwordRequirements.length ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
+                                        <span>At least 8 characters</span>
+                                    </div>
+                                    <div className={`flex items-center gap-2 ${passwordRequirements.uppercase ? 'text-green-600' : 'text-muted-foreground'}`}>
+                                        {passwordRequirements.uppercase ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
+                                        <span>One uppercase letter</span>
+                                    </div>
+                                    <div className={`flex items-center gap-2 ${passwordRequirements.lowercase ? 'text-green-600' : 'text-muted-foreground'}`}>
+                                        {passwordRequirements.lowercase ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
+                                        <span>One lowercase letter</span>
+                                    </div>
+                                    <div className={`flex items-center gap-2 ${passwordRequirements.special ? 'text-green-600' : 'text-muted-foreground'}`}>
+                                        {passwordRequirements.special ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
+                                        <span>One special character</span>
+                                    </div>
+                                </div>
+                            )}
                         </div>
-                        <Button type="submit" className="w-full font-bold shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98]">
+                        <Button
+                            type="submit"
+                            className="w-full font-bold shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                            disabled={!isPasswordValid && password.length > 0}
+                        >
                             Create account
                         </Button>
                     </form>
