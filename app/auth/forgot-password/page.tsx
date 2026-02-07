@@ -1,19 +1,42 @@
-
 'use client'
 
-import { Suspense } from "react"
+import { Suspense, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from "@/components/ui/card"
 import Link from "next/link"
-import { forgotPassword } from "../actions"
 import { useSearchParams } from "next/navigation"
 import { motion } from "framer-motion"
+import { createClient } from "@/utils/supabase/client"
 
 function ForgotPasswordContent() {
     const searchParams = useSearchParams()
-    const error = searchParams.get('error')
-    const message = searchParams.get('message')
+    const [error, setError] = useState<string | null>(searchParams.get('error'))
+    const [message, setMessage] = useState<string | null>(searchParams.get('message'))
+    const [loading, setLoading] = useState(false)
+
+    // Using Client-side handling to ensure PKCE cookies are set correctly
+    const handleSubmit = async (formData: FormData) => {
+        setLoading(true)
+        setError(null)
+        setMessage(null)
+        const email = formData.get('email') as string
+        const supabase = createClient()
+
+        // Browser-side reliable origin
+        const origin = window.location.origin
+
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+            redirectTo: `${origin}/auth/callback?next=/auth/update-password`,
+        })
+
+        if (error) {
+            setError(error.message)
+        } else {
+            setMessage('Check your email for the reset link.')
+        }
+        setLoading(false)
+    }
 
     return (
         <motion.div
@@ -40,13 +63,13 @@ function ForgotPasswordContent() {
                             {message}
                         </div>
                     )}
-                    <form action={forgotPassword} className="grid gap-4">
+                    <form action={handleSubmit} className="grid gap-4">
                         <div className="grid gap-2">
                             <label htmlFor="email" className="text-sm font-medium leading-none">Email</label>
                             <Input id="email" name="email" type="email" placeholder="m@example.com" required className="bg-background/50" />
                         </div>
-                        <Button type="submit" className="w-full font-bold shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98]">
-                            Send Reset Link
+                        <Button type="submit" disabled={loading} className="w-full font-bold shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98]">
+                            {loading ? 'Sending...' : 'Send Reset Link'}
                         </Button>
                     </form>
 
