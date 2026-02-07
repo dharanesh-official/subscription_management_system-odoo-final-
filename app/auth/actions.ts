@@ -126,7 +126,12 @@ export async function logout() {
 export async function forgotPassword(formData: FormData) {
     const supabase = await createClient()
     const email = formData.get('email') as string
-    const origin = (await headers()).get('origin')
+    // Robust URL resolution for Vercel/Prod
+    let origin = process.env.NEXT_PUBLIC_APP_URL ??
+        process.env.NEXT_PUBLIC_VERCEL_URL ??
+        'http://localhost:3000'
+    origin = origin.includes('http') ? origin : `https://${origin}`
+    origin = origin.endsWith('/') ? origin.slice(0, -1) : origin
 
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${origin}/auth/callback?next=/auth/update-password`,

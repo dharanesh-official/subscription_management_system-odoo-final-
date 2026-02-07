@@ -29,6 +29,9 @@ export async function GET(request: NextRequest) {
             }
 
             return NextResponse.redirect(`${getURL()}${next}`)
+        } else {
+            // Redirect with error message from Supabase
+            return NextResponse.redirect(`${getURL()}/auth/login?error=Could not authenticate user&error_description=${encodeURIComponent(error.message)}`)
         }
     }
 
