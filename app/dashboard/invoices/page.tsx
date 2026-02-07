@@ -65,7 +65,16 @@ export default async function CustomerInvoicesPage() {
                                 <TableCell className="font-medium">${Number(inv.amount_due).toFixed(2)}</TableCell>
                                 <TableCell>{new Date(inv.created_at).toLocaleDateString()}</TableCell>
                                 <TableCell>
-                                    <Badge variant={inv.status === 'paid' ? 'default' : inv.status === 'overdue' ? 'destructive' : 'secondary'}>
+                                    <Badge variant={
+                                        inv.status === 'paid' ? 'default' :
+                                            inv.status === 'confirmed' ? 'default' :
+                                                inv.status === 'overdue' ? 'destructive' :
+                                                    'secondary'
+                                    } className={
+                                        inv.status === 'paid' ? 'bg-green-600 hover:bg-green-700' :
+                                            inv.status === 'confirmed' ? 'bg-blue-600 hover:bg-blue-700' :
+                                                ''
+                                    }>
                                         {inv.status}
                                     </Badge>
                                 </TableCell>

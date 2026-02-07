@@ -15,10 +15,29 @@ import {
     Zap,
     Briefcase
 } from "lucide-react"
+import { createClient } from "@/utils/supabase/server"
 
-export default function Sidebar({ role }: { role: 'admin' | 'customer' }) {
+export default async function Sidebar({ role }: { role: 'admin' | 'customer' }) {
+    const supabase = await createClient()
+    let subCount = 0
+
+    if (role === 'customer') {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (user?.email) {
+            const { data: customer } = await supabase.from('customers').select('id').eq('email', user.email).single()
+            if (customer) {
+                const { count } = await supabase
+                    .from('subscriptions')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('customer_id', customer.id)
+                    .in('status', ['active', 'trialing', 'confirmed'])
+                subCount = count || 0
+            }
+        }
+    }
+
     return (
-        <div className="hidden border-r bg-muted/40 md:block w-[220px] ls:w-[280px]">
+        <div className="hidden border-r bg-muted/40 md:block w-[220px] lg:w-[280px]">
             <div className="flex h-full max-h-screen flex-col gap-2">
                 <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
                     <Link href="/" className="flex items-center gap-2 font-semibold">
@@ -92,9 +111,11 @@ export default function Sidebar({ role }: { role: 'admin' | 'customer' }) {
                                 >
                                     <ShoppingCart className="h-4 w-4" />
                                     My Subscriptions
-                                    <Badge className="ml-auto flex h-6 w-6 shrink-0 items-center justify-center rounded-full">
-                                        1
-                                    </Badge>
+                                    {subCount > 0 && (
+                                        <Badge className="ml-auto flex h-6 w-6 shrink-0 items-center justify-center rounded-full">
+                                            {subCount}
+                                        </Badge>
+                                    )}
                                 </Link>
                                 <Link
                                     href="/dashboard/invoices"
