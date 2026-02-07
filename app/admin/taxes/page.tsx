@@ -1,4 +1,4 @@
-import { getTaxes, createTax, toggleTaxStatus } from "./actions"
+import { getTaxes, createTax } from "./actions"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -10,11 +10,16 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
-import { Switch } from "@/components/ui/switch"
-import { Plus } from "lucide-react"
+import { Plus, Percent } from "lucide-react"
 
 export default async function TaxesPage() {
     const taxes = await getTaxes()
+
+    // Server-side action wrapper to handle the return type mismatch for the form
+    async function handleCreateTax(formData: FormData) {
+        'use server'
+        await createTax(formData)
+    }
 
     return (
         <div className="space-y-6">
@@ -27,10 +32,11 @@ export default async function TaxesPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div className="md:col-span-1 border rounded-lg p-6 bg-card shadow-sm h-fit">
-                    <h3 className="text-lg font-semibold mb-4">Add New Tax</h3>
-                    <form action={async (formData) => {
-                        await createTax(formData)
-                    }} className="space-y-4">
+                    <h3 className="text-lg font-semibold mb-4 text-primary flex items-center gap-2">
+                        <Percent className="h-5 w-5" />
+                        Add New Tax
+                    </h3>
+                    <form action={handleCreateTax} className="space-y-4">
                         <div className="grid gap-2">
                             <Label htmlFor="name">Tax Name (e.g. GST 18%)</Label>
                             <Input id="name" name="name" placeholder="Service Tax" required />
@@ -39,20 +45,20 @@ export default async function TaxesPage() {
                             <Label htmlFor="rate">Rate (%)</Label>
                             <Input id="rate" name="rate" type="number" step="0.01" placeholder="18.00" required />
                         </div>
-                        <div className="flex items-center space-x-2">
-                            <input type="checkbox" name="active" id="active" defaultChecked className="h-4 w-4" />
-                            <Label htmlFor="active">Active</Label>
+                        <div className="flex items-center space-x-2 bg-muted/50 p-3 rounded-md border border-dashed">
+                            <input type="checkbox" name="active" id="active" defaultChecked className="h-4 w-4 rounded border-gray-300 text-primary" />
+                            <Label htmlFor="active" className="cursor-pointer">Active for Invoicing</Label>
                         </div>
                         <Button type="submit" className="w-full">
-                            <Plus className="mr-2 h-4 w-4" /> Create Tax
+                            <Plus className="mr-2 h-4 w-4" /> Create Tax Rule
                         </Button>
                     </form>
                 </div>
 
-                <div className="md:col-span-2 border rounded-lg bg-card shadow-sm">
+                <div className="md:col-span-2 border rounded-lg bg-card shadow-sm overflow-hidden">
                     <Table>
                         <TableHeader>
-                            <TableRow>
+                            <TableRow className="bg-muted/50">
                                 <TableHead>Tax Name</TableHead>
                                 <TableHead>Rate (%)</TableHead>
                                 <TableHead>Status</TableHead>
@@ -61,17 +67,17 @@ export default async function TaxesPage() {
                         <TableBody>
                             {taxes.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={3} className="text-center py-8 text-muted-foreground">
-                                        No taxes configured.
+                                    <TableCell colSpan={3} className="text-center py-12 text-muted-foreground italic">
+                                        No taxes configured. Start by adding one.
                                     </TableCell>
                                 </TableRow>
                             ) : (
                                 taxes.map((tax) => (
-                                    <TableRow key={tax.id}>
+                                    <TableRow key={tax.id} className="hover:bg-muted/30 transition-colors">
                                         <TableCell className="font-medium">{tax.name}</TableCell>
-                                        <TableCell>{tax.rate}%</TableCell>
+                                        <TableCell className="font-mono">{tax.rate}%</TableCell>
                                         <TableCell>
-                                            <Badge variant={tax.active ? "default" : "secondary"}>
+                                            <Badge active={tax.active}>
                                                 {tax.active ? "Active" : "Inactive"}
                                             </Badge>
                                         </TableCell>
@@ -86,9 +92,12 @@ export default async function TaxesPage() {
     )
 }
 
-function Badge({ children, variant }: { children: React.ReactNode, variant: string }) {
+function Badge({ children, active }: { children: React.ReactNode, active: boolean }) {
     return (
-        <span className={`px-2 py-1 rounded-full text-xs font-bold ${variant === 'default' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>
+        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${active
+                ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                : 'bg-slate-100 text-slate-800 border border-slate-200'
+            }`}>
             {children}
         </span>
     )

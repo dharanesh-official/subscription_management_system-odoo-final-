@@ -17,7 +17,11 @@ export async function createTax(formData: FormData) {
 
 export async function getTaxes() {
     const supabase = await createClient()
-    const { data } = await supabase.from('taxes').select('*').order('created_at', { ascending: false })
+    const { data, error } = await supabase.from('taxes').select('*').order('created_at', { ascending: false })
+    if (error) {
+        console.error('Error fetching taxes:', error)
+        return []
+    }
     return data || []
 }
 
