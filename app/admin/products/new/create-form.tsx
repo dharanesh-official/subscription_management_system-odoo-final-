@@ -16,9 +16,16 @@ import {
 import { useState } from "react"
 import Link from "next/link"
 
+import { Loader2 } from "lucide-react"
+
 export default function CreateProductForm() {
     const [loading, setLoading] = useState(false)
     const [type, setType] = useState('service')
+
+    const handleSubmit = async (formData: FormData) => {
+        setLoading(true)
+        await createProduct(formData)
+    }
 
     return (
         <div className="max-w-2xl mx-auto p-6 bg-card rounded-lg border shadow-sm mt-8">
@@ -27,7 +34,7 @@ export default function CreateProductForm() {
                 <p className="text-muted-foreground text-sm">Create a base product to attach pricing plans to.</p>
             </div>
 
-            <form action={createProduct} className="space-y-6">
+            <form action={handleSubmit} className="space-y-6">
                 <div className="grid gap-2">
                     <Label htmlFor="name">Product Name</Label>
                     <Input id="name" name="name" placeholder="e.g. Premium Support" required className="max-w-md" />
@@ -76,6 +83,7 @@ export default function CreateProductForm() {
                         <Button variant="outline" type="button">Cancel</Button>
                     </Link>
                     <Button type="submit" disabled={loading}>
+                        {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                         {loading ? 'Saving...' : 'Create Product'}
                     </Button>
                 </div>

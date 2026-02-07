@@ -14,11 +14,17 @@ import {
 } from "@/components/ui/select"
 import { useState } from "react"
 import Link from "next/link"
+import { Loader2 } from "lucide-react"
 
 export default function CreatePlanForm({ products }: { products: any[] }) {
     const [loading, setLoading] = useState(false)
     const [productId, setProductId] = useState('')
     const [interval, setInterval] = useState('monthly')
+
+    const handleSubmit = async (formData: FormData) => {
+        setLoading(true)
+        await createPlan(formData)
+    }
 
     return (
         <div className="max-w-2xl mx-auto p-6 bg-card rounded-lg border shadow-sm mt-8">
@@ -27,7 +33,7 @@ export default function CreatePlanForm({ products }: { products: any[] }) {
                 <p className="text-muted-foreground text-sm">Define billing paramaters for a product.</p>
             </div>
 
-            <form action={createPlan} className="space-y-6">
+            <form action={handleSubmit} className="space-y-6">
                 <div className="grid gap-2">
                     <Label htmlFor="product">Base Product</Label>
                     <input type="hidden" name="product_id" value={productId} />
@@ -115,6 +121,7 @@ export default function CreatePlanForm({ products }: { products: any[] }) {
                         <Button variant="outline" type="button">Cancel</Button>
                     </Link>
                     <Button type="submit" disabled={loading || !productId}>
+                        {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                         {loading ? 'Saving...' : 'Create Plan'}
                     </Button>
                 </div>

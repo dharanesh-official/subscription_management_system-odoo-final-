@@ -16,6 +16,7 @@ import {
 import { useState } from "react"
 import Link from "next/link"
 import { formatCurrency } from "@/lib/utils"
+import { Loader2 } from "lucide-react"
 
 export default function CreateSubscriptionForm({ customers, plans }: { customers: any[], plans: any[] }) {
     const [loading, setLoading] = useState(false)
@@ -33,8 +34,13 @@ export default function CreateSubscriptionForm({ customers, plans }: { customers
     const taxAmount = amount * taxRate
     const totalAmount = amount + taxAmount
 
+    const handleSubmit = async (formData: FormData) => {
+        setLoading(true)
+        await createSubscription(formData)
+    }
+
     return (
-        <form action={createSubscription}>
+        <form action={handleSubmit}>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-5xl mx-auto mt-8">
                 <div className="lg:col-span-2 space-y-6">
                     <div className="p-6 bg-card rounded-lg border shadow-sm">
@@ -156,6 +162,7 @@ export default function CreateSubscriptionForm({ customers, plans }: { customers
                             </div>
                             <div className="pt-4">
                                 <Button type="submit" className="w-full" disabled={!customerId || !planId || loading}>
+                                    {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                     {status === 'active' ? 'Verify & Activate' : 'Create Quotation'}
                                 </Button>
                                 <Link href="/admin/subscriptions">

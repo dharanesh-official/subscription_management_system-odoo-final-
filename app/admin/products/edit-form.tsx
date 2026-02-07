@@ -17,6 +17,8 @@ import { useState } from "react"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 
+import { Loader2 } from "lucide-react"
+
 export default function EditProductForm({ product }: { product: any }) {
     const searchParams = useSearchParams()
     const error = searchParams.get('error')
@@ -26,6 +28,11 @@ export default function EditProductForm({ product }: { product: any }) {
 
     const updateWithId = updateProduct.bind(null, product.id)
 
+    const handleSubmit = async (formData: FormData) => {
+        setLoading(true)
+        await updateWithId(formData)
+    }
+
     return (
         <div className="max-w-2xl mx-auto p-6 bg-card rounded-lg border shadow-sm mt-8">
             <div className="mb-8">
@@ -33,7 +40,7 @@ export default function EditProductForm({ product }: { product: any }) {
                 <p className="text-muted-foreground text-sm">Update product details.</p>
             </div>
 
-            <form action={updateWithId} className="space-y-6">
+            <form action={handleSubmit} className="space-y-6">
                 {error && (
                     <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-md">
                         {decodeURIComponent(error)}
@@ -93,6 +100,7 @@ export default function EditProductForm({ product }: { product: any }) {
                         <Button variant="outline" type="button">Cancel</Button>
                     </Link>
                     <Button type="submit" disabled={loading}>
+                        {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                         {loading ? 'Saving...' : 'Update Product'}
                     </Button>
                 </div>
