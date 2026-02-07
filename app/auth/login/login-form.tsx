@@ -6,9 +6,9 @@ import { Card, CardHeader, CardContent, CardTitle, CardDescription } from "@/com
 import Link from "next/link"
 import { loginCustomer } from "../actions"
 import { useSearchParams, useRouter } from "next/navigation"
-import { useRef, useEffect } from "react"
+import { useRef, useEffect, useState } from "react"
 import { toast } from "sonner"
-import { TriangleAlert } from "lucide-react"
+import { TriangleAlert, Loader2 } from "lucide-react"
 import { motion } from "framer-motion"
 
 export default function LoginForm() {
@@ -16,10 +16,12 @@ export default function LoginForm() {
     const router = useRouter()
     const error = searchParams.get('error')
     const toastShownRef = useRef(false)
+    const [loading, setLoading] = useState(false)
 
     useEffect(() => {
         if (error && !toastShownRef.current) {
             toastShownRef.current = true
+            setLoading(false) // Reset loading on error return
 
             toast.warning(error, {
                 icon: <TriangleAlert className="h-5 w-5 mr-3 text-amber-500" />,
@@ -51,7 +53,7 @@ export default function LoginForm() {
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <form action={loginCustomer} className="grid gap-4">
+                    <form action={loginCustomer} onSubmit={() => setLoading(true)} className="grid gap-4">
                         <div className="grid gap-2">
                             <label htmlFor="email" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Email</label>
                             <Input id="email" name="email" type="email" placeholder="m@example.com" required className="bg-background/50" />
@@ -65,8 +67,15 @@ export default function LoginForm() {
                             </div>
                             <Input id="password" name="password" type="password" required placeholder="********" className="bg-background/50" />
                         </div>
-                        <Button type="submit" className="w-full font-bold shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98]">
-                            Sign in
+                        <Button type="submit" disabled={loading} className="w-full font-bold shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98]">
+                            {loading ? (
+                                <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Signing in...
+                                </>
+                            ) : (
+                                "Sign in"
+                            )}
                         </Button>
                     </form>
 
@@ -82,14 +91,15 @@ export default function LoginForm() {
                     </div>
 
                     <form action={async () => {
+                        setLoading(true)
                         const { loginWithGoogle } = await import("../actions")
                         await loginWithGoogle()
                     }}>
-                        <Button variant="outline" type="submit" className="w-full hover:bg-muted/50 transition-colors">
+                        <Button variant="outline" type="submit" disabled={loading} className="w-full hover:bg-muted/50 transition-colors">
                             <svg className="mr-2 h-4 w-4" aria-hidden="true" focusable="false" data-prefix="fab" data-icon="google" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512">
                                 <path fill="currentColor" d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"></path>
                             </svg>
-                            Google
+                            {loading ? 'Redirecting...' : 'Google'}
                         </Button>
                     </form>
 

@@ -6,9 +6,9 @@ import { Card, CardHeader, CardContent, CardTitle, CardDescription } from "@/com
 import Link from "next/link"
 import { loginAdmin } from "../actions"
 import { useSearchParams, useRouter } from "next/navigation"
-import { useRef, useEffect } from "react"
+import { useRef, useEffect, useState } from "react"
 import { toast } from "sonner"
-import { TriangleAlert, ShieldCheck } from "lucide-react"
+import { TriangleAlert, ShieldCheck, Loader2 } from "lucide-react"
 import { motion } from "framer-motion"
 
 export default function AdminLoginForm() {
@@ -16,10 +16,12 @@ export default function AdminLoginForm() {
     const router = useRouter()
     const error = searchParams.get('error')
     const toastShownRef = useRef(false)
+    const [loading, setLoading] = useState(false)
 
     useEffect(() => {
         if (error && !toastShownRef.current) {
             toastShownRef.current = true
+            setLoading(false) // Reset on error
             toast.warning(error, {
                 icon: <TriangleAlert className="h-5 w-5 mr-3 text-red-500" />,
                 description: "Security check failed.",
@@ -54,7 +56,7 @@ export default function AdminLoginForm() {
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <form action={loginAdmin} className="grid gap-4">
+                    <form action={loginAdmin} onSubmit={() => setLoading(true)} className="grid gap-4">
                         <div className="grid gap-2">
                             <label htmlFor="email" className="text-sm font-medium leading-none text-zinc-300">Email</label>
                             <Input
@@ -79,8 +81,15 @@ export default function AdminLoginForm() {
                                 className="bg-zinc-800/50 border-zinc-700 text-zinc-100 placeholder:text-zinc-500 focus-visible:ring-blue-500"
                             />
                         </div>
-                        <Button type="submit" className="w-full font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-900/20">
-                            Authenticate
+                        <Button type="submit" disabled={loading} className="w-full font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-900/20">
+                            {loading ? (
+                                <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Authenticating...
+                                </>
+                            ) : (
+                                "Authenticate"
+                            )}
                         </Button>
                     </form>
 
