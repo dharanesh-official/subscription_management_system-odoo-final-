@@ -48,11 +48,7 @@ export function LandingHero() {
                             Start Free Trial <ArrowRight className="ml-2 h-4 w-4" />
                         </Button>
                     </Link>
-                    <Link href="/admin">
-                        <Button variant="outline" size="lg" className="h-12 px-8 text-base backdrop-blur-sm transition-transform hover:scale-105 active:scale-95 duration-200">
-                            View Admin Demo
-                        </Button>
-                    </Link>
+
                 </motion.div>
             </div>
         </section>
