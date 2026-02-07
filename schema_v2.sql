@@ -103,4 +103,20 @@ ALTER TABLE public.plans ADD COLUMN IF NOT EXISTS closable boolean DEFAULT true;
 ALTER TABLE public.plans ADD COLUMN IF NOT EXISTS pausable boolean DEFAULT true;
 ALTER TABLE public.plans ADD COLUMN IF NOT EXISTS renewable boolean DEFAULT true;
 
-ALTER TABLE public.invoices ADD COLUMN IF NOT EXISTS status text DEFAULT 'draft' CHECK (status IN ('draft', 'posted', 'paid', 'cancelled'));
+ALTER TABLE public.invoices ADD COLUMN IF NOT EXISTS status text DEFAULT 'draft';
+
+-- 8. Configuration/Settings
+CREATE TABLE IF NOT EXISTS public.settings (
+    key text PRIMARY KEY,
+    value text NOT NULL,
+    description text,
+    updated_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- Initial default settings
+INSERT INTO public.settings (key, value, description) VALUES 
+('company_name', 'SubCheck Inc.', 'The legal name of the organization'),
+('default_currency', 'inr', 'Default currency for billing'),
+('auto_invoice', 'true', 'Whether to automatically generate invoices for active subscriptions'),
+('send_welcome_email', 'true', 'Send email to customers upon signup')
+ON CONFLICT (key) DO NOTHING;

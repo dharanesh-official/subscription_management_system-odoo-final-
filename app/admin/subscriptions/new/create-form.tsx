@@ -18,7 +18,7 @@ import Link from "next/link"
 import { formatCurrency } from "@/lib/utils"
 import { Loader2, Plus, Trash2 } from "lucide-react"
 
-export default function CreateSubscriptionForm({ customers, plans }: { customers: any[], plans: any[] }) {
+export default function CreateSubscriptionForm({ customers, plans, templates }: { customers: any[], plans: any[], templates?: any[] }) {
     const [loading, setLoading] = useState(false)
     const [customerId, setCustomerId] = useState('')
     const [status, setStatus] = useState('draft')
@@ -32,6 +32,21 @@ export default function CreateSubscriptionForm({ customers, plans }: { customers
         const newLines = [...lines]
         newLines[index] = { ...newLines[index], [field]: value }
         setLines(newLines)
+    }
+
+    const applyTemplate = (templateId: string) => {
+        const template = templates?.find(t => t.id === templateId)
+        if (!template) return
+
+        const newLines = template.quotation_template_lines.map((tl: any) => {
+            // Find the first active plan for this product
+            const plan = plans.find(p => p.product_id === tl.product_id)
+            return {
+                planId: plan?.id || '',
+                quantity: tl.quantity
+            }
+        })
+        setLines(newLines.length > 0 ? newLines : [{ planId: '', quantity: 1 }])
     }
 
     // Calculate Estimates
@@ -74,6 +89,21 @@ export default function CreateSubscriptionForm({ customers, plans }: { customers
                                         ))}
                                     </SelectContent>
                                 </Select>
+                            </div>
+
+                            <div className="grid gap-2 border-t pt-4">
+                                <Label htmlFor="template">Load from Quotation Template (Optional)</Label>
+                                <Select onValueChange={applyTemplate}>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select a template to auto-fill..." />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {templates?.length === 0 ? <SelectItem value="none" disabled>No templates</SelectItem> : templates?.map(t => (
+                                            <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <p className="text-[10px] text-muted-foreground">Selecting a template will replace existing order lines.</p>
                             </div>
 
                             <div className="space-y-4 border-t pt-6">
