@@ -50,9 +50,9 @@ export default function CreatePlanForm({ products }: { products: any[] }) {
 
                 <div className="grid grid-cols-2 gap-4">
                     <div className="grid gap-2">
-                        <Label htmlFor="amount">Price (USD)</Label>
+                        <Label htmlFor="amount">Price (INR)</Label>
                         <div className="relative">
-                            <span className="absolute left-3 top-2.5 text-gray-500">$</span>
+                            <span className="absolute left-3 top-2.5 text-gray-500">₹</span>
                             <Input id="amount" name="amount" type="number" step="0.01" min="0" placeholder="0.00" className="pl-7" required />
                         </div>
                     </div>

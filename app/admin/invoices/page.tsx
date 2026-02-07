@@ -13,6 +13,7 @@ import {
 import Link from "next/link"
 import { Plus, MoreHorizontal, MousePointerClick } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
+import { formatCurrency } from "@/lib/utils"
 
 export default async function InvoicesPage() {
     const supabase = await createClient()
@@ -47,20 +48,20 @@ export default async function InvoicesPage() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {invoices?.length === 0 ? (
+                        {!invoices || invoices.length === 0 ? (
                             <TableRow>
                                 <TableCell colSpan={6} className="h-24 text-center">
                                     No invoices found. Activate a subscription to generate one.
                                 </TableCell>
                             </TableRow>
-                        ) : (invoices?.map((inv: any) => (
+                        ) : (invoices.map((inv: any) => (
                             <TableRow key={inv.id}>
                                 <TableCell className="font-mono text-xs text-muted-foreground uppercase">{inv.id.slice(0, 8)}</TableCell>
                                 <TableCell>
                                     <div className="font-medium">{inv.customers?.name}</div>
                                     <div className="text-sm text-muted-foreground">{inv.subscriptions?.plans?.name || 'Manual Charge'}</div>
                                 </TableCell>
-                                <TableCell className="font-medium">${Number(inv.amount_due).toFixed(2)}</TableCell>
+                                <TableCell className="font-medium">{formatCurrency(inv.amount_due)}</TableCell>
                                 <TableCell>{new Date(inv.due_date).toLocaleDateString()}</TableCell>
                                 <TableCell>
                                     <Badge variant={

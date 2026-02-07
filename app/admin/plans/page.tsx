@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/table"
 import Link from "next/link"
 import { Plus, MoreHorizontal } from "lucide-react"
+import { formatCurrency } from "@/lib/utils"
 
 export default async function PlansPage() {
     const supabase = await createClient()
@@ -41,17 +42,17 @@ export default async function PlansPage() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {plans?.length === 0 ? (
+                        {!plans || plans.length === 0 ? (
                             <TableRow>
                                 <TableCell colSpan={6} className="h-24 text-center">
                                     No plans available. Create a product first, then a plan.
                                 </TableCell>
                             </TableRow>
-                        ) : (plans?.map((plan: any) => (
+                        ) : (plans.map((plan: any) => (
                             <TableRow key={plan.id}>
                                 <TableCell className="font-medium">{plan.name}</TableCell>
                                 <TableCell>{plan.products?.name || 'Unknown'}</TableCell>
-                                <TableCell>${plan.amount}</TableCell>
+                                <TableCell>{formatCurrency(plan.amount)}</TableCell>
                                 <TableCell className="capitalize">{plan.interval}</TableCell>
                                 <TableCell>
                                     <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${plan.active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>

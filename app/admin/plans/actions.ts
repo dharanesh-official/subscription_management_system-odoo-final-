@@ -26,7 +26,7 @@ export async function createPlan(formData: FormData) {
         interval, // Ensure this matches DB enum strictly
         trial_period_days: trialPeriod,
         active,
-        currency: 'usd'
+        currency: 'inr'
     })
 
     if (error) {

@@ -116,7 +116,13 @@ export async function updateSubscriptionStatus(id: string, newStatus: string) {
 
                 // Calculate Tax
                 const { data: taxes } = await supabase.from('taxes').select('percentage').eq('active', true)
-                const totalTaxPercent = taxes?.reduce((acc, t) => acc + Number(t.percentage), 0) || 0
+                let totalTaxPercent = taxes?.reduce((acc, t) => acc + Number(t.percentage), 0) || 0
+
+                // Default to 18% (GST) if no taxes configured (Indian Market Rule)
+                if (totalTaxPercent === 0 && (!taxes || taxes.length === 0)) {
+                    totalTaxPercent = 18
+                }
+
                 const taxAmount = planAmount * (totalTaxPercent / 100)
                 const totalAmount = planAmount + taxAmount
 
