@@ -11,7 +11,6 @@ import {
     TableRow,
 } from "@/components/ui/table"
 import Link from "next/link"
-import { Plus, MoreHorizontal, MousePointerClick } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { formatCurrency } from "@/lib/utils"
 
@@ -23,9 +22,35 @@ export default async function InvoicesPage() {
         .select(`
       *,
       customers (name, email),
-      subscriptions (plan_id, plans(name))
+      subscriptions (plan_id, quantity, plans(name))
     `)
         .order('created_at', { ascending: false })
+
+    // Helper to safely format dates
+    const formatDate = (dateString: string | null) => {
+        if (!dateString) return '-'
+        try {
+            return new Date(dateString).toLocaleDateString()
+        } catch (e) {
+            return 'Invalid Date'
+        }
+    }
+
+    // Server action for confirming invoice
+    async function confirmInvoice(invoiceId: string) {
+        'use server'
+        const supabase = await createClient()
+        await supabase.from('invoices').update({ status: 'confirmed' }).eq('id', invoiceId)
+        revalidatePath('/admin/invoices')
+    }
+
+    // Server action for marking invoice as paid
+    async function markInvoicePaid(invoiceId: string) {
+        'use server'
+        const supabase = await createClient()
+        await supabase.from('invoices').update({ status: 'paid' }).eq('id', invoiceId)
+        revalidatePath('/admin/invoices')
+    }
 
     return (
         <div className="flex flex-col gap-4">
@@ -56,13 +81,19 @@ export default async function InvoicesPage() {
                             </TableRow>
                         ) : (invoices.map((inv: any) => (
                             <TableRow key={inv.id}>
-                                <TableCell className="font-mono text-xs text-muted-foreground uppercase">{inv.id.slice(0, 8)}</TableCell>
-                                <TableCell>
-                                    <div className="font-medium">{inv.customers?.name}</div>
-                                    <div className="text-sm text-muted-foreground">{inv.subscriptions?.plans?.name || 'Manual Charge'}</div>
+                                <TableCell className="font-mono text-xs text-muted-foreground uppercase">
+                                    {inv.id?.slice(0, 8) || 'N/A'}
                                 </TableCell>
-                                <TableCell className="font-medium">{formatCurrency(inv.amount_due)}</TableCell>
-                                <TableCell>{new Date(inv.due_date).toLocaleDateString()}</TableCell>
+                                <TableCell>
+                                    <div className="font-medium">{inv.customers?.name || 'Unknown Customer'}</div>
+                                    <div className="text-sm text-muted-foreground">
+                                        {inv.subscriptions?.plans?.name || 'Manual Charge'}
+                                    </div>
+                                </TableCell>
+                                <TableCell className="font-medium">
+                                    {formatCurrency(Number(inv.amount_due || 0))}
+                                </TableCell>
+                                <TableCell>{formatDate(inv.due_date)}</TableCell>
                                 <TableCell>
                                     <Badge variant={
                                         inv.status === 'paid' ? 'default' :
@@ -74,38 +105,24 @@ export default async function InvoicesPage() {
                                             inv.status === 'confirmed' ? 'bg-blue-600 hover:bg-blue-700' :
                                                 ''
                                     }>
-                                        {inv.status}
+                                        {inv.status || 'draft'}
                                     </Badge>
                                 </TableCell>
                                 <TableCell>
                                     <div className="flex gap-2">
                                         {inv.status === 'draft' && (
-                                            <form action={async () => {
-                                                'use server'
-                                                const supabase = await createClient()
-                                                await supabase.from('invoices').update({ status: 'confirmed' }).eq('id', inv.id)
-                                                revalidatePath('/admin/invoices')
-                                            }}>
+                                            <form action={confirmInvoice.bind(null, inv.id)}>
                                                 <Button size="sm" variant="default">Confirm</Button>
                                             </form>
                                         )}
                                         {(inv.status === 'confirmed' || inv.status === 'sent') && (
-                                            <form action={async () => {
-                                                'use server'
-                                                const supabase = await createClient()
-                                                await supabase.from('invoices').update({ status: 'paid' }).eq('id', inv.id)
-                                                revalidatePath('/admin/invoices')
-                                            }}>
+                                            <form action={markInvoicePaid.bind(null, inv.id)}>
                                                 <Button size="sm" className="bg-green-600 hover:bg-green-700">Mark Paid</Button>
                                             </form>
                                         )}
                                         <Link href={`/admin/invoices/${inv.id}`}>
                                             <Button variant="ghost" size="sm">View</Button>
                                         </Link>
-                                        <Button variant="ghost" size="sm" onClick={() => {
-                                            'use client'
-                                            alert('Invoice sent to ' + inv.customers?.email)
-                                        }}>Send</Button>
                                     </div>
                                 </TableCell>
                             </TableRow>
