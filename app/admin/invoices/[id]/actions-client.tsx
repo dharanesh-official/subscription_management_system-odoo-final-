@@ -4,15 +4,34 @@
 import { Button } from "@/components/ui/button"
 import { Printer, Send } from "lucide-react"
 import { toast } from "sonner"
+import { sendInvoiceManually } from "../actions"
+import { useState } from "react"
+import { useParams } from "next/navigation"
 
-export default function InvoiceActions({ customerEmail }: { customerEmail: string }) {
+export default function InvoiceActions({ customerEmail }: { customerEmail?: string }) {
+    const [sending, setSending] = useState(false)
+    const params = useParams()
+    const invoiceId = params.id as string
+
     const handlePrint = () => {
         window.print()
     }
 
-    const handleSend = () => {
-        // Mock send
-        toast.success(`Invoice sent to ${customerEmail}`)
+    const handleSend = async () => {
+        if (!customerEmail) {
+            toast.error('Customer email not found')
+            return
+        }
+
+        setSending(true)
+        const result = await sendInvoiceManually(invoiceId)
+        setSending(false)
+
+        if (result.success) {
+            toast.success(`Invoice sent to ${customerEmail}`)
+        } else {
+            toast.error(result.error || 'Failed to send invoice')
+        }
     }
 
     return (
@@ -20,8 +39,12 @@ export default function InvoiceActions({ customerEmail }: { customerEmail: strin
             <Button variant="outline" onClick={handlePrint}>
                 <Printer className="mr-2 h-4 w-4" /> Print
             </Button>
-            <Button onClick={handleSend}>
-                <Send className="mr-2 h-4 w-4" /> Send
+            <Button
+                onClick={handleSend}
+                disabled={sending || !customerEmail}
+            >
+                <Send className="mr-2 h-4 w-4" />
+                {sending ? 'Sending...' : 'Send'}
             </Button>
         </div>
     )

@@ -13,6 +13,8 @@ import {
 import Link from "next/link"
 import { Badge } from "@/components/ui/badge"
 import { formatCurrency } from "@/lib/utils"
+import { sendInvoiceManually } from "./actions"
+import SendInvoiceButton from "./send-button"
 
 export default async function InvoicesPage() {
     const supabase = await createClient()
@@ -69,7 +71,7 @@ export default async function InvoicesPage() {
                             <TableHead>Amount</TableHead>
                             <TableHead>Due Date</TableHead>
                             <TableHead>Status</TableHead>
-                            <TableHead className="w-[100px]">Actions</TableHead>
+                            <TableHead className="w-[150px]">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -98,12 +100,14 @@ export default async function InvoicesPage() {
                                     <Badge variant={
                                         inv.status === 'paid' ? 'default' :
                                             inv.status === 'confirmed' ? 'default' :
-                                                inv.status === 'overdue' ? 'destructive' :
-                                                    'secondary'
+                                                inv.status === 'sent' ? 'default' :
+                                                    inv.status === 'overdue' ? 'destructive' :
+                                                        'secondary'
                                     } className={
                                         inv.status === 'paid' ? 'bg-green-600 hover:bg-green-700' :
                                             inv.status === 'confirmed' ? 'bg-blue-600 hover:bg-blue-700' :
-                                                ''
+                                                inv.status === 'sent' ? 'bg-purple-600 hover:bg-purple-700' :
+                                                    ''
                                     }>
                                         {inv.status || 'draft'}
                                     </Badge>
@@ -123,6 +127,7 @@ export default async function InvoicesPage() {
                                         <Link href={`/admin/invoices/${inv.id}`}>
                                             <Button variant="ghost" size="sm">View</Button>
                                         </Link>
+                                        <SendInvoiceButton invoiceId={inv.id} customerEmail={inv.customers?.email} />
                                     </div>
                                 </TableCell>
                             </TableRow>

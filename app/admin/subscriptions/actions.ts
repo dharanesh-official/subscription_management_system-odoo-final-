@@ -4,6 +4,7 @@
 import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { sendInvoiceEmail } from '@/lib/email'
 
 export async function createSubscription(formData: FormData) {
     const supabase = await createClient()
@@ -71,16 +72,42 @@ export async function createSubscription(formData: FormData) {
         dueDate.setDate(dueDate.getDate() + paymentTerms)
 
         // @ts-ignore
-        const { error: invError } = await supabase.from('invoices').insert({
+        const { data: invoice, error: invError } = await supabase.from('invoices').insert({
             subscription_id: subscription.id,
             customer_id: customerId,
             amount_due: totalAmount,
             currency: 'inr',
             status: 'confirmed',
             due_date: dueDate.toISOString(),
-        })
+        }).select().single()
 
-        if (invError) console.error('Error creating invoice:', invError)
+        if (invError) {
+            console.error('Error creating invoice:', invError)
+        } else if (invoice) {
+            // Fetch customer details for email
+            const { data: customer } = await supabase
+                .from('customers')
+                .select('name, email')
+                .eq('id', customerId)
+                .single()
+
+            // Send invoice email automatically
+            if (customer?.email) {
+                await sendInvoiceEmail({
+                    customerName: customer.name,
+                    customerEmail: customer.email,
+                    invoiceId: invoice.id,
+                    invoiceNumber: invoice.id.slice(0, 8).toUpperCase(),
+                    amount: totalAmount,
+                    dueDate: dueDate.toISOString(),
+                    planName: plan.name,
+                    quantity: quantity,
+                    subtotal: subAmount,
+                    tax: taxAmount,
+                    total: totalAmount,
+                })
+            }
+        }
     }
 
     revalidatePath('/admin/subscriptions')
@@ -114,6 +141,7 @@ export async function updateSubscriptionStatus(id: string, newStatus: string) {
                 .select(`
                     *,
                     plans (
+                        name,
                         amount
                     )
                 `)
@@ -143,16 +171,43 @@ export async function updateSubscriptionStatus(id: string, newStatus: string) {
                 dueDate.setDate(dueDate.getDate() + paymentTerms)
 
                 // Create Invoice
-                const { error: invError } = await supabase.from('invoices').insert({
+                const { data: invoice, error: invError } = await supabase.from('invoices').insert({
                     subscription_id: sub.id,
                     customer_id: sub.customer_id,
                     amount_due: totalAmount,
                     currency: 'inr',
                     status: 'draft', // Initial invoice status
                     due_date: dueDate.toISOString(),
-                })
+                }).select().single()
 
-                if (invError) console.error('Auto-invoice generation error:', invError)
+                if (invError) {
+                    console.error('Auto-invoice generation error:', invError)
+                } else if (invoice) {
+                    // Fetch customer details for email
+                    const { data: customer } = await supabase
+                        .from('customers')
+                        .select('name, email')
+                        .eq('id', sub.customer_id)
+                        .single()
+
+                    // Send invoice email automatically
+                    if (customer?.email) {
+                        await sendInvoiceEmail({
+                            customerName: customer.name,
+                            customerEmail: customer.email,
+                            invoiceId: invoice.id,
+                            invoiceNumber: invoice.id.slice(0, 8).toUpperCase(),
+                            amount: totalAmount,
+                            dueDate: dueDate.toISOString(),
+                            // @ts-ignore
+                            planName: sub.plans.name,
+                            quantity: quantity,
+                            subtotal: planAmount,
+                            tax: taxAmount,
+                            total: totalAmount,
+                        })
+                    }
+                }
             }
         }
     }
