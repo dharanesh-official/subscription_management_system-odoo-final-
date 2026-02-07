@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from "@/components/ui/card"
 import Link from "next/link"
-import { login } from "../actions"
+import { loginCustomer } from "../actions"
 import { useSearchParams, useRouter } from "next/navigation"
 import { useRef, useEffect } from "react"
 import { toast } from "sonner"
@@ -23,7 +23,7 @@ export default function LoginForm() {
 
             toast.warning(error, {
                 icon: <TriangleAlert className="h-5 w-5 mr-3 text-amber-500" />,
-                description: "Please check your credentials and try again.",
+                description: "Please check your details.",
                 duration: 5000,
                 id: "login-error"
             })
@@ -45,13 +45,13 @@ export default function LoginForm() {
         >
             <Card className="w-full max-w-sm border-0 shadow-2xl bg-background/80 backdrop-blur-xl">
                 <CardHeader className="space-y-1">
-                    <CardTitle className="text-2xl font-bold text-center tracking-tight">Welcome back</CardTitle>
+                    <CardTitle className="text-2xl font-bold text-center tracking-tight">Customer Portal</CardTitle>
                     <CardDescription className="text-center">
-                        Enter your email below to login to your account.
+                        Enter your email to login to your account.
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <form action={login} className="grid gap-4">
+                    <form action={loginCustomer} className="grid gap-4">
                         <div className="grid gap-2">
                             <label htmlFor="email" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Email</label>
                             <Input id="email" name="email" type="email" placeholder="m@example.com" required className="bg-background/50" />

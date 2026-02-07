@@ -7,35 +7,92 @@ import { createClient } from '@/utils/supabase/server'
 import { headers } from 'next/headers'
 import { sendWelcomeEmail } from '@/utils/mail'
 
+// Basic login redirection
 export async function login(formData: FormData) {
-    const supabase = await createClient()
+    // Legacy support for basic login
+    return loginCustomer(formData)
+}
 
+export async function loginAdmin(formData: FormData) {
+    const supabase = await createClient()
     const email = formData.get('email') as string
     const password = formData.get('password') as string
 
+    // 1. Authenticate
     const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
     })
 
-    const { data: { user } } = await supabase.auth.getUser()
-
-    // Basic role check - in a real app query profiles table
-    // For hackathon speed, we use metadata or assume based on email/role
-    let redirectUrl = '/dashboard' // Default
-
     if (error) {
-        console.error("Login Error:", error.message) // Debugging for user
-        // Map common errors to user-friendly messages
+        console.error("Login Error:", error.message)
         let message = error.message
         if (error.message === 'Invalid login credentials') {
-            message = 'Invalid email or password. (Check if email is confirmed)'
+            message = 'Invalid email or password.'
+        }
+        return redirect(`/auth/admin-login?error=${encodeURIComponent(message)}`)
+    }
+
+    // 2. Check Roles
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return redirect('/auth/admin-login')
+
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single()
+
+    const role = profile?.role || 'customer'
+
+    if (role !== 'admin') {
+        await supabase.auth.signOut()
+        return redirect(`/auth/admin-login?error=${encodeURIComponent('Access Denied. Admin privileges required.')}`)
+    }
+
+    revalidatePath('/', 'layout')
+    redirect('/admin/dashboard')
+}
+
+export async function loginCustomer(formData: FormData) {
+    const supabase = await createClient()
+    const email = formData.get('email') as string
+    const password = formData.get('password') as string
+
+    // 1. Authenticate
+    const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+    })
+
+    if (error) {
+        console.error("Login Error:", error.message)
+        let message = error.message
+        if (error.message === 'Invalid login credentials') {
+            message = 'Invalid email or password.'
         }
         return redirect(`/auth/login?error=${encodeURIComponent(message)}`)
     }
 
+    // 2. Check Roles
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return redirect('/auth/login')
+
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single()
+
+    const role = profile?.role || 'customer'
+
+    if (role === 'admin') {
+        await supabase.auth.signOut()
+        return redirect(`/auth/login?error=${encodeURIComponent('Admins must use the Admin Portal.')}`)
+    }
+
     revalidatePath('/', 'layout')
-    redirect(redirectUrl)
+    redirect('/dashboard')
 }
 
 export async function signup(formData: FormData) {
