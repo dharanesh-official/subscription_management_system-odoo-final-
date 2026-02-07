@@ -8,7 +8,7 @@ import {
     Package,
     ShoppingCart,
     Users,
-    LineChart,
+
     Settings,
     Wallet,
     LogOut,
