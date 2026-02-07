@@ -16,7 +16,7 @@ export async function createPlan(formData: FormData) {
     const active = formData.get('active') === 'on'
 
     if (!productId || !name || isNaN(amount)) {
-        return { error: 'Missing required fields' }
+        return redirect('/admin/plans/new?error=Missing required fields')
     }
 
     const { error } = await supabase.from('plans').insert({
@@ -31,7 +31,7 @@ export async function createPlan(formData: FormData) {
 
     if (error) {
         console.error('Create plan error:', error)
-        return { error: 'Could not create plan' }
+        return redirect('/admin/plans/new?error=Could not create plan')
     }
 
     revalidatePath('/admin/plans')
@@ -44,7 +44,7 @@ export async function deletePlan(id: string) {
     const { error } = await supabase.from('plans').delete().eq('id', id)
 
     if (error) {
-        return { error: 'Could not delete plan' }
+        console.error('Delete plan error:', error)
     }
 
     revalidatePath('/admin/plans')

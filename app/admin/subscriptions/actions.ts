@@ -14,13 +14,13 @@ export async function createSubscription(formData: FormData) {
     const startDate = formData.get('start_date') ? new Date(formData.get('start_date') as string) : new Date()
 
     if (!customerId || !planId) {
-        return { error: 'Customer and Plan are required' }
+        return redirect('/admin/subscriptions/new?error=Customer and Plan are required')
     }
 
     // Calculate end date based on plan interval
     const { data: plan } = await supabase.from('plans').select('*').eq('id', planId).single()
 
-    if (!plan) return { error: 'Plan not found' }
+    if (!plan) return redirect('/admin/subscriptions/new?error=Plan not found')
 
     let endDate = new Date(startDate)
     // Simple date math
@@ -44,7 +44,7 @@ export async function createSubscription(formData: FormData) {
 
     if (error) {
         console.error('Create subscription error:', error)
-        return { error: 'Could not create subscription' }
+        return redirect('/admin/subscriptions/new?error=Could not create subscription')
     }
 
     // If status is active, generate the first invoice immediately
@@ -80,6 +80,6 @@ export async function createSubscription(formData: FormData) {
 export async function updateSubscriptionStatus(id: string, newStatus: string) {
     const supabase = await createClient()
     const { error } = await supabase.from('subscriptions').update({ status: newStatus }).eq('id', id)
-    if (error) return { error }
+    if (error) console.error('Update subscription error:', error)
     revalidatePath('/admin/subscriptions')
 }

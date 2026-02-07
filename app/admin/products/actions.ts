@@ -14,7 +14,7 @@ export async function createProduct(formData: FormData) {
     const active = formData.get('active') === 'on'
 
     if (!name) {
-        return { error: 'Name is required' }
+        return redirect('/admin/products/new?error=Name is required')
     }
 
     const { error } = await supabase.from('products').insert({
@@ -26,7 +26,7 @@ export async function createProduct(formData: FormData) {
 
     if (error) {
         console.error('Create product error:', error)
-        return { error: 'Could not create product' }
+        return redirect('/admin/products/new?error=Could not create product')
     }
 
     revalidatePath('/admin/products')
@@ -49,7 +49,8 @@ export async function updateProduct(id: string, formData: FormData) {
     }).eq('id', id)
 
     if (error) {
-        return { error: 'Could not update product' }
+        console.error('Update product error:', error)
+        return redirect('/admin/products?error=Could not update product')
     }
 
     revalidatePath('/admin/products')
@@ -62,7 +63,7 @@ export async function deleteProduct(id: string) {
     const { error } = await supabase.from('products').delete().eq('id', id)
 
     if (error) {
-        return { error: 'Could not delete product' }
+        console.error('Delete product error:', error)
     }
 
     revalidatePath('/admin/products')
