@@ -61,6 +61,13 @@ export default async function Sidebar({ role }: { role: 'admin' | 'customer' }) 
                                     Dashboard
                                 </Link>
                                 <Link
+                                    href="/admin/subscriptions"
+                                    className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
+                                >
+                                    <ShoppingCart className="h-4 w-4" />
+                                    Subscriptions
+                                </Link>
+                                <Link
                                     href="/admin/products"
                                     className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
                                 >
