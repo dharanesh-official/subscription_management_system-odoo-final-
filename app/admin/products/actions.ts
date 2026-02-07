@@ -12,8 +12,10 @@ export async function createProduct(formData: FormData) {
     const description = formData.get('description') as string
     const type = formData.get('type') as string
     const active = formData.get('active') === 'on'
-    const salesPrice = Number(formData.get('sales_price') || 0)
-    const costPrice = Number(formData.get('cost_price') || 0)
+    const salesVal = Number(formData.get('sales_price'))
+    const costVal = Number(formData.get('cost_price'))
+    const salesPrice = isNaN(salesVal) ? 0 : salesVal
+    const costPrice = isNaN(costVal) ? 0 : costVal
 
     if (!name) {
         return redirect('/admin/products/new?error=Name is required')
