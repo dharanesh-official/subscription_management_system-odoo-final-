@@ -14,6 +14,7 @@ import Link from "next/link"
 import { Plus, MoreHorizontal, FileText, CheckCircle, XCircle } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { formatCurrency } from "@/lib/utils"
+import { updateSubscriptionStatus } from "./actions"
 
 export default async function SubscriptionsPage() {
     const supabase = await createClient()
@@ -101,9 +102,7 @@ export default async function SubscriptionsPage() {
                                         {sub.status === 'draft' && (
                                             <form action={async () => {
                                                 'use server'
-                                                const supabase = await createClient()
-                                                await supabase.from('subscriptions').update({ status: 'quotation' }).eq('id', sub.id)
-                                                revalidatePath('/admin/subscriptions')
+                                                await updateSubscriptionStatus(sub.id, 'quotation')
                                             }}>
                                                 <Button size="sm" variant="outline">Convert to Quotation</Button>
                                             </form>
@@ -111,9 +110,7 @@ export default async function SubscriptionsPage() {
                                         {sub.status === 'quotation' && (
                                             <form action={async () => {
                                                 'use server'
-                                                const supabase = await createClient()
-                                                await supabase.from('subscriptions').update({ status: 'confirmed' }).eq('id', sub.id)
-                                                revalidatePath('/admin/subscriptions')
+                                                await updateSubscriptionStatus(sub.id, 'confirmed')
                                             }}>
                                                 <Button size="sm" variant="default">Confirm</Button>
                                             </form>
@@ -121,9 +118,7 @@ export default async function SubscriptionsPage() {
                                         {sub.status === 'confirmed' && (
                                             <form action={async () => {
                                                 'use server'
-                                                const supabase = await createClient()
-                                                await supabase.from('subscriptions').update({ status: 'active' }).eq('id', sub.id)
-                                                revalidatePath('/admin/subscriptions')
+                                                await updateSubscriptionStatus(sub.id, 'active')
                                             }}>
                                                 <Button size="sm" className="bg-green-600 hover:bg-green-700">Activate</Button>
                                             </form>
@@ -131,9 +126,7 @@ export default async function SubscriptionsPage() {
                                         {sub.status === 'active' && (
                                             <form action={async () => {
                                                 'use server'
-                                                const supabase = await createClient()
-                                                await supabase.from('subscriptions').update({ status: 'closed' }).eq('id', sub.id)
-                                                revalidatePath('/admin/subscriptions')
+                                                await updateSubscriptionStatus(sub.id, 'closed')
                                             }}>
                                                 <Button size="sm" variant="destructive">Close</Button>
                                             </form>
