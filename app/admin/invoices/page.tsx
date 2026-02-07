@@ -13,8 +13,9 @@ import {
 import Link from "next/link"
 import { Badge } from "@/components/ui/badge"
 import { formatCurrency } from "@/lib/utils"
-import { sendInvoiceManually } from "./actions"
+import { sendInvoiceManually, cancelInvoice } from "./actions"
 import SendInvoiceButton from "./send-button"
+import { Printer, XCircle } from "lucide-react"
 
 export default async function InvoicesPage() {
     const supabase = await createClient()
@@ -124,10 +125,20 @@ export default async function InvoicesPage() {
                                                 <Button size="sm" className="bg-green-600 hover:bg-green-700">Mark Paid</Button>
                                             </form>
                                         )}
-                                        <Link href={`/admin/invoices/${inv.id}`}>
-                                            <Button variant="ghost" size="sm">View</Button>
-                                        </Link>
                                         <SendInvoiceButton invoiceId={inv.id} customerEmail={inv.customers?.email} />
+                                        {inv.status !== 'cancelled' && inv.status !== 'paid' && (
+                                            <form action={async () => {
+                                                'use server'
+                                                await cancelInvoice(inv.id)
+                                            }}>
+                                                <Button variant="ghost" size="icon" className="text-destructive h-8 w-8">
+                                                    <XCircle className="h-4 w-4" />
+                                                </Button>
+                                            </form>
+                                        )}
+                                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => window.print()}>
+                                            <Printer className="h-4 w-4" />
+                                        </Button>
                                     </div>
                                 </TableCell>
                             </TableRow>

@@ -78,6 +78,21 @@ export default function CreateProductForm() {
                     </div>
                 </div>
 
+                <div className="space-y-4 border-t pt-6">
+                    <Label className="text-lg font-semibold">Product Attributes</Label>
+                    <p className="text-xs text-muted-foreground">Define variants like Size or Color for this product.</p>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="grid gap-2">
+                            <Label htmlFor="attr_name">Attribute Name</Label>
+                            <Input id="attr_name" name="attribute_name" placeholder="e.g. Color" />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="attr_values">Values (comma separated)</Label>
+                            <Input id="attr_values" name="attribute_values" placeholder="Red, Blue, Green" />
+                        </div>
+                    </div>
+                </div>
+
                 <div className="flex gap-4 pt-6">
                     <Link href="/admin/products">
                         <Button variant="outline" type="button">Cancel</Button>

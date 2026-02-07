@@ -16,37 +16,48 @@ import {
 import { useState } from "react"
 import Link from "next/link"
 import { formatCurrency } from "@/lib/utils"
-import { Loader2 } from "lucide-react"
+import { Loader2, Plus, Trash2 } from "lucide-react"
 
 export default function CreateSubscriptionForm({ customers, plans }: { customers: any[], plans: any[] }) {
     const [loading, setLoading] = useState(false)
     const [customerId, setCustomerId] = useState('')
-    const [planId, setPlanId] = useState('')
     const [status, setStatus] = useState('draft')
-    const [quantity, setQuantity] = useState(1)
+    const [lines, setLines] = useState([{ planId: '', quantity: 1 }])
 
-    const selectedPlan = plans.find(p => p.id === planId)
     const selectedCustomer = customers.find(c => c.id === customerId)
 
+    const addLine = () => setLines([...lines, { planId: '', quantity: 1 }])
+    const removeLine = (index: number) => setLines(lines.filter((_, i) => i !== index))
+    const updateLine = (index: number, field: string, value: any) => {
+        const newLines = [...lines]
+        newLines[index] = { ...newLines[index], [field]: value }
+        setLines(newLines)
+    }
+
     // Calculate Estimates
-    const amount = Number(selectedPlan?.amount || 0) * quantity
+    const subtotal = lines.reduce((acc, line) => {
+        const plan = plans.find(p => p.id === line.planId)
+        return acc + (Number(plan?.amount || 0) * line.quantity)
+    }, 0)
     const taxRate = 0.18 // Estimated GST 18% as per Indian Rules logic
-    const taxAmount = amount * taxRate
-    const totalAmount = amount + taxAmount
+    const taxAmount = subtotal * taxRate
+    const totalAmount = subtotal + taxAmount
 
     const handleSubmit = async (formData: FormData) => {
         setLoading(true)
+        // Add lines data to formData or handle differently if needed
+        // For simplicity, we'll assume the action can handle indexed fields or we'll pass it in
         await createSubscription(formData)
     }
 
     return (
         <form action={handleSubmit}>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-5xl mx-auto mt-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-6xl mx-auto mt-8">
                 <div className="lg:col-span-2 space-y-6">
                     <div className="p-6 bg-card rounded-lg border shadow-sm">
                         <div className="mb-8">
                             <h1 className="text-2xl font-bold tracking-tight">New Subscription</h1>
-                            <p className="text-muted-foreground text-sm">Create a quotation or activate a plan for a customer.</p>
+                            <p className="text-muted-foreground text-sm">Create a multi-line quotation or activate a subscription.</p>
                         </div>
 
                         <div className="space-y-6">
@@ -63,39 +74,63 @@ export default function CreateSubscriptionForm({ customers, plans }: { customers
                                         ))}
                                     </SelectContent>
                                 </Select>
-                                <div className="text-sm text-muted-foreground flex justify-end">
-                                    <Link href="/admin/customers/new" className="text-primary hover:underline">+ New Customer</Link>
-                                </div>
                             </div>
 
-                            <div className="grid gap-2">
-                                <Label htmlFor="plan">Subscription Plan</Label>
-                                <input type="hidden" name="plan_id" value={planId} />
-                                <Select value={planId} onValueChange={setPlanId}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select a plan..." />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {plans.length === 0 ? <SelectItem value="none" disabled>No active plans</SelectItem> : plans.map(p => (
-                                            <SelectItem key={p.id} value={p.id}>{p.products?.name} - {p.name} ({formatCurrency(p.amount)}/{p.interval})</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+                            <div className="space-y-4 border-t pt-6">
+                                <Label>Order Lines</Label>
+                                {lines.map((line, index) => (
+                                    <div key={index} className="grid grid-cols-12 gap-4 items-end bg-muted/30 p-3 rounded-md border border-dashed">
+                                        <div className="col-span-6">
+                                            <Label className="text-[10px] uppercase text-muted-foreground">Product / Plan</Label>
+                                            <input type="hidden" name={`lines[${index}].plan_id`} value={line.planId} />
+                                            <Select value={line.planId} onValueChange={(val) => updateLine(index, 'planId', val)}>
+                                                <SelectTrigger className="bg-background">
+                                                    <SelectValue placeholder="Select Plan" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {plans.map(p => (
+                                                        <SelectItem key={p.id} value={p.id}>{p.products?.name} - {p.name}</SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                        <div className="col-span-3">
+                                            <Label className="text-[10px] uppercase text-muted-foreground">Quantity</Label>
+                                            <Input
+                                                type="number"
+                                                min="1"
+                                                className="bg-background"
+                                                name={`lines[${index}].quantity`}
+                                                value={line.quantity}
+                                                onChange={(e) => updateLine(index, 'quantity', Number(e.target.value))}
+                                            />
+                                        </div>
+                                        <div className="col-span-2 text-right py-2">
+                                            <div className="text-[10px] uppercase text-muted-foreground">Subtotal</div>
+                                            <div className="font-medium text-sm">
+                                                {formatCurrency(Number(plans.find(p => p.id === line.planId)?.amount || 0) * line.quantity)}
+                                            </div>
+                                        </div>
+                                        <div className="col-span-1">
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="icon"
+                                                className="text-destructive h-9 w-9"
+                                                onClick={() => removeLine(index)}
+                                                disabled={lines.length === 1}
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                    </div>
+                                ))}
+                                <Button type="button" variant="outline" size="sm" className="w-full" onClick={addLine}>
+                                    <Plus className="mr-2 h-4 w-4" /> Add Product Line
+                                </Button>
                             </div>
 
-                            <div className="grid gap-2">
-                                <Label htmlFor="quantity">Quantity</Label>
-                                <Input
-                                    id="quantity"
-                                    name="quantity"
-                                    type="number"
-                                    min="1"
-                                    value={quantity}
-                                    onChange={(e) => setQuantity(Number(e.target.value))}
-                                />
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-2 gap-4 border-t pt-6">
                                 <div className="grid gap-2">
                                     <Label htmlFor="status">Initial Status</Label>
                                     <input type="hidden" name="status" value={status} />
@@ -114,19 +149,6 @@ export default function CreateSubscriptionForm({ customers, plans }: { customers
                                     <Input id="start_date" name="start_date" type="date" defaultValue={new Date().toISOString().split('T')[0]} />
                                 </div>
                             </div>
-
-                            <div className="grid gap-2">
-                                <Label htmlFor="payment_terms">Payment Terms (Days)</Label>
-                                <Input
-                                    id="payment_terms"
-                                    name="payment_terms"
-                                    type="number"
-                                    min="0"
-                                    defaultValue="7"
-                                    placeholder="Number of days until payment is due"
-                                />
-                                <p className="text-xs text-muted-foreground">Invoices will be due this many days after generation</p>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -134,39 +156,35 @@ export default function CreateSubscriptionForm({ customers, plans }: { customers
                 <div className="lg:col-span-1">
                     <Card className="sticky top-4">
                         <CardHeader>
-                            <CardTitle>Summary</CardTitle>
-                            <CardDescription>Estimated billing details.</CardDescription>
+                            <CardTitle>Total Summary</CardTitle>
+                            <CardDescription>Consolidated billing details.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="flex justify-between items-center text-sm">
                                 <span className="text-muted-foreground">Customer:</span>
                                 <span className="font-medium truncate max-w-[150px]">{selectedCustomer?.name || '-'}</span>
                             </div>
-                            <div className="flex justify-between items-center text-sm">
-                                <span className="text-muted-foreground">Plan:</span>
-                                <span className="font-medium truncate max-w-[150px]">{selectedPlan?.name || '-'}</span>
-                            </div>
                             <div className="border-t pt-2 mt-2 space-y-2">
                                 <div className="flex justify-between items-center text-sm">
-                                    <span>Subtotal ({quantity} x {formatCurrency(Number(selectedPlan?.amount || 0))}):</span>
-                                    <span>{formatCurrency(amount)}</span>
+                                    <span>Untaxed Amount:</span>
+                                    <span>{formatCurrency(subtotal)}</span>
                                 </div>
                                 <div className="flex justify-between items-center text-sm text-muted-foreground">
-                                    <span>GST (18% Est.):</span>
+                                    <span>GST (18%):</span>
                                     <span>{formatCurrency(taxAmount)}</span>
                                 </div>
                             </div>
-                            <div className="border-t pt-4 flex justify-between items-center font-bold text-lg">
+                            <div className="border-t pt-4 flex justify-between items-center font-bold text-xl text-primary">
                                 <span>Total:</span>
                                 <span>{formatCurrency(totalAmount)}</span>
                             </div>
                             <div className="pt-4">
-                                <Button type="submit" className="w-full" disabled={!customerId || !planId || loading}>
+                                <Button type="submit" className="w-full" size="lg" disabled={!customerId || lines.some(l => !l.planId) || loading}>
                                     {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                    {status === 'active' ? 'Verify & Activate' : 'Create Quotation'}
+                                    {status === 'active' ? 'Verify & Create' : 'Send Quotation'}
                                 </Button>
                                 <Link href="/admin/subscriptions">
-                                    <Button variant="ghost" className="w-full mt-2" type="button">Cancel</Button>
+                                    <Button variant="ghost" className="w-full mt-2" type="button">Discard</Button>
                                 </Link>
                             </div>
                         </CardContent>
