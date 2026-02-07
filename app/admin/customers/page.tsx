@@ -11,6 +11,7 @@ import {
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { Plus } from "lucide-react"
+import DeleteCustomerButton from "./delete-button"
 
 export default async function CustomersPage() {
     const supabase = await createClient()
@@ -58,6 +59,7 @@ export default async function CustomersPage() {
                                         <Link href={`/admin/customers/${customer.id}/edit`}>
                                             <Button variant="ghost" size="sm">Edit</Button>
                                         </Link>
+                                        <DeleteCustomerButton id={customer.id} />
                                     </TableCell>
                                 </TableRow>
                             ))

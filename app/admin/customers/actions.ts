@@ -82,3 +82,20 @@ export async function updateCustomer(id: string, formData: FormData) {
     revalidatePath('/admin/customers')
     redirect('/admin/customers')
 }
+
+export async function deleteCustomer(id: string) {
+    const supabase = await createClient()
+    const { error } = await supabase.from('customers').delete().eq('id', id)
+
+    if (error) {
+        console.error('Delete customer error:', error)
+        // Check for FK constraint
+        if (error.code === '23503') { // Foreign Key Violation
+            return { error: 'Used in subscriptions/invoices' }
+        }
+        return { error: 'Could not delete customer' }
+    }
+
+    revalidatePath('/admin/customers')
+    return { success: true }
+}
