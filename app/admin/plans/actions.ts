@@ -13,7 +13,12 @@ export async function createPlan(formData: FormData) {
     const amount = Number(formData.get('amount'))
     const interval = formData.get('interval') as string
     const trialPeriod = Number(formData.get('trial_period_days') || 0)
+    const minQuantity = Number(formData.get('min_quantity') || 1)
     const active = formData.get('active') === 'on'
+    const autoClose = formData.get('auto_close') === 'on'
+    const closable = formData.get('closable') === 'on'
+    const pausable = formData.get('pausable') === 'on'
+    const renewable = formData.get('renewable') === 'on'
 
     if (!productId || !name || isNaN(amount)) {
         return redirect('/admin/plans/new?error=Missing required fields')
@@ -25,7 +30,12 @@ export async function createPlan(formData: FormData) {
         amount,
         interval, // Ensure this matches DB enum strictly
         trial_period_days: trialPeriod,
+        min_quantity: minQuantity,
         active,
+        auto_close: autoClose,
+        closable,
+        pausable,
+        renewable,
         currency: 'inr'
     })
 

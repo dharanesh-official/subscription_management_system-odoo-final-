@@ -22,12 +22,13 @@ export default function CreateSubscriptionForm({ customers, plans }: { customers
     const [customerId, setCustomerId] = useState('')
     const [planId, setPlanId] = useState('')
     const [status, setStatus] = useState('draft')
+    const [quantity, setQuantity] = useState(1)
 
     const selectedPlan = plans.find(p => p.id === planId)
     const selectedCustomer = customers.find(c => c.id === customerId)
 
     // Calculate Estimates
-    const amount = Number(selectedPlan?.amount || 0)
+    const amount = Number(selectedPlan?.amount || 0) * quantity
     const taxRate = 0.18 // Estimated GST 18% as per Indian Rules logic
     const taxAmount = amount * taxRate
     const totalAmount = amount + taxAmount
@@ -74,6 +75,18 @@ export default function CreateSubscriptionForm({ customers, plans }: { customers
                                         ))}
                                     </SelectContent>
                                 </Select>
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="quantity">Quantity</Label>
+                                <Input
+                                    id="quantity"
+                                    name="quantity"
+                                    type="number"
+                                    min="1"
+                                    value={quantity}
+                                    onChange={(e) => setQuantity(Number(e.target.value))}
+                                />
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">
@@ -129,7 +142,7 @@ export default function CreateSubscriptionForm({ customers, plans }: { customers
                             </div>
                             <div className="border-t pt-2 mt-2 space-y-2">
                                 <div className="flex justify-between items-center text-sm">
-                                    <span>Subtotal:</span>
+                                    <span>Subtotal ({quantity} x {formatCurrency(Number(selectedPlan?.amount || 0))}):</span>
                                     <span>{formatCurrency(amount)}</span>
                                 </div>
                                 <div className="flex justify-between items-center text-sm text-muted-foreground">

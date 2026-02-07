@@ -102,6 +102,10 @@ export default async function InvoicesPage() {
                                         <Link href={`/admin/invoices/${inv.id}`}>
                                             <Button variant="ghost" size="sm">View</Button>
                                         </Link>
+                                        <Button variant="ghost" size="sm" onClick={() => {
+                                            'use client'
+                                            alert('Invoice sent to ' + inv.customers?.email)
+                                        }}>Send</Button>
                                     </div>
                                 </TableCell>
                             </TableRow>

@@ -45,6 +45,17 @@ export default function EditProductForm({ product }: { product: any }) {
                     <Input id="name" name="name" defaultValue={product.name} required className="max-w-md" />
                 </div>
 
+                <div className="grid grid-cols-2 gap-4 max-w-md">
+                    <div className="grid gap-2">
+                        <Label htmlFor="sales_price">Sales Price (INR)</Label>
+                        <Input id="sales_price" name="sales_price" defaultValue={product.sales_price || 0} type="number" step="0.01" min="0" />
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="cost_price">Cost Price (INR)</Label>
+                        <Input id="cost_price" name="cost_price" defaultValue={product.cost_price || 0} type="number" step="0.01" min="0" />
+                    </div>
+                </div>
+
                 <div className="grid gap-2">
                     <Label htmlFor="description">Description</Label>
                     <Textarea id="description" name="description" defaultValue={product.description} className="min-h-[100px]" />

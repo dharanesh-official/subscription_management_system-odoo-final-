@@ -33,6 +33,17 @@ export default function CreateProductForm() {
                     <Input id="name" name="name" placeholder="e.g. Premium Support" required className="max-w-md" />
                 </div>
 
+                <div className="grid grid-cols-2 gap-4 max-w-md">
+                    <div className="grid gap-2">
+                        <Label htmlFor="sales_price">Sales Price (INR)</Label>
+                        <Input id="sales_price" name="sales_price" type="number" step="0.01" min="0" placeholder="0.00" />
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="cost_price">Cost Price (INR)</Label>
+                        <Input id="cost_price" name="cost_price" type="number" step="0.01" min="0" placeholder="0.00" />
+                    </div>
+                </div>
+
                 <div className="grid gap-2">
                     <Label htmlFor="description">Description</Label>
                     <Textarea id="description" name="description" placeholder="Product details..." className="min-h-[100px]" />

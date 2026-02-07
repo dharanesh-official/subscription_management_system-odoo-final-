@@ -75,12 +75,38 @@ export default function CreatePlanForm({ products }: { products: any[] }) {
 
                 <div className="grid grid-cols-2 gap-4 items-end">
                     <div className="grid gap-2">
+                        <Label htmlFor="min_quantity">Minimum Quantity</Label>
+                        <Input id="min_quantity" name="min_quantity" type="number" min="1" defaultValue="1" />
+                    </div>
+                    <div className="grid gap-2">
                         <Label htmlFor="trial">Trial Days</Label>
                         <Input id="trial" name="trial_period_days" type="number" min="0" defaultValue="0" />
                     </div>
-                    <div className="flex items-center space-x-2 pb-2">
-                        <input type="checkbox" name="active" id="active" className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary" defaultChecked />
-                        <Label htmlFor="active" className="font-medium cursor-pointer">Active Status</Label>
+                </div>
+
+                <div className="space-y-3 pt-2">
+                    <Label>Plan Options</Label>
+                    <div className="grid grid-cols-2 gap-4 border p-4 rounded-md">
+                        <div className="flex items-center space-x-2">
+                            <input type="checkbox" name="active" id="active" className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary" defaultChecked />
+                            <Label htmlFor="active" className="font-medium cursor-pointer">Active Status</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                            <input type="checkbox" name="auto_close" id="auto_close" className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary" />
+                            <Label htmlFor="auto_close" className="font-medium cursor-pointer">Auto-close</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                            <input type="checkbox" name="closable" id="closable" className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary" defaultChecked />
+                            <Label htmlFor="closable" className="font-medium cursor-pointer">Closable</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                            <input type="checkbox" name="pausable" id="pausable" className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary" defaultChecked />
+                            <Label htmlFor="pausable" className="font-medium cursor-pointer">Pausable</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                            <input type="checkbox" name="renewable" id="renewable" className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary" defaultChecked />
+                            <Label htmlFor="renewable" className="font-medium cursor-pointer">Renewable</Label>
+                        </div>
                     </div>
                 </div>
 

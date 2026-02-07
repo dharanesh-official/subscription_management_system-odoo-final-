@@ -12,6 +12,7 @@ export async function createSubscription(formData: FormData) {
     const planId = formData.get('plan_id') as string
     const status = formData.get('status') as string || 'draft'
     const startDate = formData.get('start_date') ? new Date(formData.get('start_date') as string) : new Date()
+    const quantity = Number(formData.get('quantity') || 1)
     const paymentTerms = Number(formData.get('payment_terms') || 7)
 
     if (!customerId || !planId) {
@@ -42,6 +43,7 @@ export async function createSubscription(formData: FormData) {
         current_period_start: startDate.toISOString(),
         current_period_end: endDate.toISOString(),
         payment_terms: paymentTerms,
+        quantity,
     }).select().single()
 
     if (error) {
@@ -54,19 +56,26 @@ export async function createSubscription(formData: FormData) {
         // Fetch active taxes
         const { data: taxes } = await supabase.from('taxes').select('percentage').eq('active', true)
 
-        const totalTaxPercent = taxes?.reduce((acc, t) => acc + Number(t.percentage), 0) || 0
-        const subAmount = Number(plan.amount)
+        let totalTaxPercent = taxes?.reduce((acc, t) => acc + Number(t.percentage), 0) || 0
+
+        // Default to 18% (GST) if no taxes configured (Indian Market Rule)
+        if (totalTaxPercent === 0 && (!taxes || taxes.length === 0)) {
+            totalTaxPercent = 18
+        }
+
+        const subAmount = Number(plan.amount) * quantity
         const taxAmount = subAmount * (totalTaxPercent / 100)
         const totalAmount = subAmount + taxAmount
 
         const dueDate = new Date()
         dueDate.setDate(dueDate.getDate() + paymentTerms)
 
+        // @ts-ignore
         const { error: invError } = await supabase.from('invoices').insert({
             subscription_id: subscription.id,
             customer_id: customerId,
             amount_due: totalAmount,
-            currency: 'usd',
+            currency: 'inr',
             status: 'confirmed',
             due_date: dueDate.toISOString(),
         })
@@ -75,7 +84,6 @@ export async function createSubscription(formData: FormData) {
     }
 
     revalidatePath('/admin/subscriptions')
-    // We don't have invoices path yet but good to note
     redirect('/admin/subscriptions')
 }
 
@@ -84,18 +92,20 @@ export async function updateSubscriptionStatus(id: string, newStatus: string) {
 
     // 1. Update Status
     const { error } = await supabase.from('subscriptions').update({ status: newStatus }).eq('id', id)
+
     if (error) {
-        console.error('Update subscription error:', error)
+        console.error('Update subscription status error:', error)
         return
     }
 
-    // 2. Generate Invoice if moving to Confirmed/Active and no invoice exists
+    // 2. Generate Invoice if moving to Confirmed/Active
     if (newStatus === 'confirmed' || newStatus === 'active') {
+        // Check if invoice exists for this sub (simplified check)
         const { data: existingInvoice } = await supabase
             .from('invoices')
             .select('id')
             .eq('subscription_id', id)
-            .maybeSingle() // Use maybeSingle to avoid 406 error if 0 rows
+            .maybeSingle()
 
         if (!existingInvoice) {
             // Fetch Subscription + Plan details
@@ -112,7 +122,9 @@ export async function updateSubscriptionStatus(id: string, newStatus: string) {
 
             if (sub && sub.plans) {
                 // @ts-ignore
-                const planAmount = Number(sub.plans.amount)
+                const quantity = sub.quantity || 1
+                // @ts-ignore
+                const planAmount = Number(sub.plans.amount) * quantity
 
                 // Calculate Tax
                 const { data: taxes } = await supabase.from('taxes').select('percentage').eq('active', true)
@@ -135,7 +147,7 @@ export async function updateSubscriptionStatus(id: string, newStatus: string) {
                     subscription_id: sub.id,
                     customer_id: sub.customer_id,
                     amount_due: totalAmount,
-                    currency: 'usd',
+                    currency: 'inr',
                     status: 'draft', // Initial invoice status
                     due_date: dueDate.toISOString(),
                 })

@@ -12,6 +12,8 @@ export async function createProduct(formData: FormData) {
     const description = formData.get('description') as string
     const type = formData.get('type') as string
     const active = formData.get('active') === 'on'
+    const salesPrice = Number(formData.get('sales_price') || 0)
+    const costPrice = Number(formData.get('cost_price') || 0)
 
     if (!name) {
         return redirect('/admin/products/new?error=Name is required')
@@ -22,6 +24,8 @@ export async function createProduct(formData: FormData) {
         description,
         type: type || 'service',
         active,
+        sales_price: salesPrice,
+        cost_price: costPrice,
     })
 
     if (error) {
@@ -40,12 +44,16 @@ export async function updateProduct(id: string, formData: FormData) {
     const description = formData.get('description') as string
     const type = formData.get('type') as string
     const active = formData.get('active') === 'on'
+    const salesPrice = Number(formData.get('sales_price') || 0)
+    const costPrice = Number(formData.get('cost_price') || 0)
 
     const { error } = await supabase.from('products').update({
         name,
         description,
         type,
         active,
+        sales_price: salesPrice,
+        cost_price: costPrice,
     }).eq('id', id)
 
     if (error) {
