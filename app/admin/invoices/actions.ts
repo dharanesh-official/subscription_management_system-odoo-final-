@@ -97,3 +97,41 @@ export async function cancelInvoice(id: string) {
     revalidatePath('/admin/invoices')
     return { success: true }
 }
+
+export async function recordPayment(invoiceId: string, formData: FormData) {
+    const supabase = await createClient()
+    const method = formData.get('method') as string
+    const amount = Number(formData.get('amount'))
+    const transactionId = formData.get('transaction_id') as string
+
+    // 1. Get current invoice
+    const { data: invoice } = await supabase.from('invoices').select('*').eq('id', invoiceId).single()
+    if (!invoice) return { error: 'Invoice not found' }
+
+    // 2. Insert payment record
+    const { error: pError } = await supabase.from('payments').insert({
+        invoice_id: invoiceId,
+        customer_id: invoice.customer_id,
+        amount: amount,
+        payment_method: method,
+        transaction_id: transactionId,
+        status: 'posted',
+        payment_date: new Date().toISOString().split('T')[0]
+    })
+
+    if (pError) return { error: pError.message }
+
+    // 3. Update invoice amount_paid and status
+    const newAmountPaid = Number(invoice.amount_paid || 0) + amount
+    const newStatus = newAmountPaid >= Number(invoice.amount_due) ? 'paid' : invoice.status
+
+    await supabase.from('invoices').update({
+        amount_paid: newAmountPaid,
+        status: newStatus,
+        paid_at: newAmountPaid >= Number(invoice.amount_due) ? new Date().toISOString() : invoice.paid_at
+    }).eq('id', invoiceId)
+
+    revalidatePath(`/admin/invoices/${invoiceId}`)
+    revalidatePath('/admin/invoices')
+    return { success: true }
+}

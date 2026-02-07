@@ -16,7 +16,10 @@ import {
     Briefcase,
     IndianRupee,
     FileText,
-    Percent
+    Percent,
+    Tag,
+    BarChart3,
+    Landmark
 } from "lucide-react"
 import { createClient } from "@/utils/supabase/server"
 
@@ -120,6 +123,20 @@ export default async function Sidebar({ role }: { role: 'admin' | 'customer' }) 
                                     Taxes
                                 </Link>
                                 <Link
+                                    href="/admin/discounts"
+                                    className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
+                                >
+                                    <Tag className="h-4 w-4" />
+                                    Discounts
+                                </Link>
+                                <Link
+                                    href="/admin/reports"
+                                    className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
+                                >
+                                    <BarChart3 className="h-4 w-4" />
+                                    Reports
+                                </Link>
+                                <Link
                                     href="/admin/settings"
                                     className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
                                 >
@@ -147,6 +164,13 @@ export default async function Sidebar({ role }: { role: 'admin' | 'customer' }) 
                                             {subCount}
                                         </Badge>
                                     )}
+                                </Link>
+                                <Link
+                                    href="/dashboard/payments"
+                                    className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
+                                >
+                                    <Landmark className="h-4 w-4" />
+                                    Payments
                                 </Link>
                                 <Link
                                     href="/dashboard/invoices"

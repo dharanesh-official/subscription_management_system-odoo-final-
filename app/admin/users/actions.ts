@@ -33,3 +33,15 @@ export async function createInternalUser(email: string, fullName: string, role: 
 
     return { error: "User must sign up first; Admin can then promote to Internal/Admin role." }
 }
+
+export async function promoteByEmail(email: string, role: 'admin' | 'internal') {
+    const supabase = await createClient()
+    const { data: profile, error: findError } = await supabase.from('profiles').select('id').eq('email', email).single()
+    if (findError || !profile) return { error: 'No user found with this email. They must sign up first.' }
+
+    const { error: updateError } = await supabase.from('profiles').update({ role }).eq('id', profile.id)
+    if (updateError) return { error: updateError.message }
+
+    revalidatePath('/admin/users')
+    return { success: true }
+}

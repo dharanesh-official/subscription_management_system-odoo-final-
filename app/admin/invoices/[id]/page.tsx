@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { formatCurrency } from "@/lib/utils"
 import Link from "next/link"
 import InvoiceActions from "./actions-client"
+import RecordPaymentModal from "./record-payment-modal"
 
 export default async function InvoiceDetailsPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params
@@ -83,7 +84,15 @@ export default async function InvoiceDetailsPage({ params }: { params: Promise<{
                 </tbody>
             </table>
 
-            <div className="flex justify-end mb-12">
+            <div className="flex justify-between items-start mb-12">
+                <div className="w-1/2">
+                    <h3 className="font-semibold text-gray-900 mb-2">Payment Details</h3>
+                    <div className="text-sm space-y-1">
+                        <p><span className="text-muted-foreground mr-2">Total Amount:</span> {formatCurrency(invoice.amount_due)}</p>
+                        <p><span className="text-muted-foreground mr-2">Amount Paid:</span> {formatCurrency(invoice.amount_paid || 0)}</p>
+                        <p className="font-semibold text-primary"><span className="text-muted-foreground mr-2 font-normal">Balance Due:</span> {formatCurrency(Number(invoice.amount_due) - Number(invoice.amount_paid || 0))}</p>
+                    </div>
+                </div>
                 <div className="w-1/2 space-y-2">
                     <div className="flex justify-between py-2 border-b">
                         <span className="font-medium text-gray-600">Subtotal</span>
@@ -106,10 +115,16 @@ export default async function InvoiceDetailsPage({ params }: { params: Promise<{
                 </p>
             </div>
 
-            <div className="print:hidden flex justify-between pt-8 border-t">
-                <Link href="/admin/invoices">
-                    <Button variant="outline">Back to Invoices</Button>
-                </Link>
+            <div className="print:hidden flex justify-between pt-8 border-t gap-2">
+                <div className="flex gap-2">
+                    <Link href="/admin/invoices">
+                        <Button variant="outline">Back</Button>
+                    </Link>
+                    <RecordPaymentModal
+                        invoiceId={invoice.id}
+                        amountDue={Number(invoice.amount_due) - Number(invoice.amount_paid || 0)}
+                    />
+                </div>
                 <InvoiceActions customerEmail={invoice.customers?.email} />
             </div>
         </div>

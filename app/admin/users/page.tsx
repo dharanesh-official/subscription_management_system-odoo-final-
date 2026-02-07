@@ -1,4 +1,4 @@
-import { getUsers, updateUserRole } from "./actions"
+import { getUsers, updateUserRole, promoteByEmail } from "./actions"
 export const dynamic = 'force-dynamic'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -40,7 +40,7 @@ export default async function UsersPage() {
                         'use server'
                         const email = formData.get('email') as string
                         const role = formData.get('role') as any
-                        // Logic to find user by email and update role
+                        await promoteByEmail(email, role)
                     }} className="space-y-4">
                         <div className="grid gap-2">
                             <Label htmlFor="email">User Email</Label>

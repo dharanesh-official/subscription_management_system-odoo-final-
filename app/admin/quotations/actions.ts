@@ -7,8 +7,13 @@ export async function createQuotationTemplate(formData: FormData) {
     const supabase = await createClient()
     const name = formData.get('name') as string
     const description = formData.get('description') as string
+    const validity_days = Number(formData.get('validity_days') || 15)
 
-    const { error } = await supabase.from('quotation_templates').insert({ name, description })
+    const { error } = await supabase.from('quotation_templates').insert({
+        name,
+        description,
+        validity_days
+    })
     if (error) return { error: error.message }
     revalidatePath('/admin/quotations')
     return { success: true }

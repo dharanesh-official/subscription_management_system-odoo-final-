@@ -21,18 +21,40 @@ export async function createProduct(formData: FormData) {
         return redirect('/admin/products/new?error=Name is required')
     }
 
-    const { error } = await supabase.from('products').insert({
+    const { data: product, error } = await supabase.from('products').insert({
         name,
         description,
         type: type || 'service',
         active,
         sales_price: salesPrice,
         cost_price: costPrice,
-    })
+    }).select().single()
 
     if (error) {
         console.error('Create product error:', error)
         return redirect('/admin/products/new?error=Could not create product')
+    }
+
+    // Handle Attributes
+    const attrName = formData.get('attribute_name') as string
+    const attrValues = formData.get('attribute_values') as string
+    const extraPrice = Number(formData.get('extra_price') || 0)
+
+    if (attrName && attrValues) {
+        const { data: attr } = await supabase.from('product_attributes').insert({
+            name: attrName
+        }).select().single()
+
+        if (attr) {
+            const values = attrValues.split(',').map(v => v.trim())
+            for (const val of values) {
+                await supabase.from('product_attribute_values').insert({
+                    attribute_id: attr.id,
+                    value: val,
+                    price_extra: extraPrice
+                })
+            }
+        }
     }
 
     revalidatePath('/admin/products')

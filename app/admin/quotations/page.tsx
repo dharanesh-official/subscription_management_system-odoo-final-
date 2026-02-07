@@ -40,6 +40,10 @@ export default async function QuotationsPage() {
                             <Label htmlFor="description">Description</Label>
                             <Input id="description" name="description" placeholder="Standard setup for small retailers" />
                         </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="validity_days">Validity (Days)</Label>
+                            <Input id="validity_days" name="validity_days" type="number" defaultValue={15} required />
+                        </div>
                         <Button type="submit" className="w-full">
                             <Plus className="mr-2 h-4 w-4" /> Create Template
                         </Button>
@@ -49,9 +53,9 @@ export default async function QuotationsPage() {
                 <div className="md:col-span-3 border rounded-lg bg-card shadow-sm overflow-hidden">
                     <Table>
                         <TableHeader>
-                            <TableRow>
+                            <TableRow className="bg-muted/50">
                                 <TableHead>Template Name</TableHead>
-                                <TableHead>Description</TableHead>
+                                <TableHead>Validity</TableHead>
                                 <TableHead>Included Items</TableHead>
                                 <TableHead className="text-right">Actions</TableHead>
                             </TableRow>
@@ -69,10 +73,13 @@ export default async function QuotationsPage() {
                                         <TableCell className="font-medium align-top">
                                             <div className="flex items-center gap-2">
                                                 <FileText className="h-4 w-4 text-blue-500" />
-                                                {tmpl.name}
+                                                <div className="flex flex-col">
+                                                    <span>{tmpl.name}</span>
+                                                    <span className="text-xs text-muted-foreground font-normal">{tmpl.description}</span>
+                                                </div>
                                             </div>
                                         </TableCell>
-                                        <TableCell className="align-top">{tmpl.description || 'No description'}</TableCell>
+                                        <TableCell className="align-top font-mono text-sm">{tmpl.validity_days} Days</TableCell>
                                         <TableCell>
                                             <div className="space-y-1">
                                                 {tmpl.quotation_template_lines?.length > 0 ? (
