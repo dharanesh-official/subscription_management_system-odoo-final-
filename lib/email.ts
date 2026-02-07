@@ -3,45 +3,45 @@ import nodemailer from 'nodemailer'
 
 // Create reusable transporter
 const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-    },
+  service: 'gmail',
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
 })
 
 export interface InvoiceEmailData {
-    customerName: string
-    customerEmail: string
-    invoiceId: string
-    invoiceNumber: string
-    amount: number
-    dueDate: string
-    planName: string
-    quantity: number
-    subtotal: number
-    tax: number
-    total: number
+  customerName: string
+  customerEmail: string
+  invoiceId: string
+  invoiceNumber: string
+  amount: number
+  dueDate: string
+  planName: string
+  quantity: number
+  subtotal: number
+  tax: number
+  total: number
 }
 
 export async function sendInvoiceEmail(data: InvoiceEmailData) {
-    const {
-        customerName,
-        customerEmail,
-        invoiceId,
-        invoiceNumber,
-        amount,
-        dueDate,
-        planName,
-        quantity,
-        subtotal,
-        tax,
-        total,
-    } = data
+  const {
+    customerName,
+    customerEmail,
+    invoiceId,
+    invoiceNumber,
+    amount,
+    dueDate,
+    planName,
+    quantity,
+    subtotal,
+    tax,
+    total,
+  } = data
 
-    const invoiceUrl = `${process.env.NEXT_PUBLIC_APP_URL}/admin/invoices/${invoiceId}`
+  const invoiceUrl = `${process.env.NEXT_PUBLIC_APP_URL}/admin/invoices/${invoiceId}`
 
-    const htmlContent = `
+  const htmlContent = `
 <!DOCTYPE html>
 <html>
 <head>
@@ -105,6 +105,10 @@ export async function sendInvoiceEmail(data: InvoiceEmailData) {
       <p style="margin-top: 30px; color: #666; font-size: 14px;">
         Please ensure payment is made by the due date to avoid any service interruption.
       </p>
+      
+      <div style="margin-top: 40px; padding: 15px; background: #f0f0f0; border-left: 4px solid #4CAF50; font-size: 13px; color: #555;">
+        <strong>Note:</strong> This is a computer-generated invoice and does not require any physical signature.
+      </div>
     </div>
     
     <div class="footer">
@@ -116,7 +120,7 @@ export async function sendInvoiceEmail(data: InvoiceEmailData) {
 </html>
   `
 
-    const textContent = `
+  const textContent = `
 Hi ${customerName},
 
 Your invoice has been generated and is ready for review.
@@ -133,23 +137,26 @@ View your invoice: ${invoiceUrl}
 Please ensure payment is made by the due date to avoid any service interruption.
 
 ---
+NOTE: This is a computer-generated invoice and does not require any physical signature.
+---
+
 This is an automated email from SubCheck Subscription Manager.
 If you have any questions, please contact us at admin@odoo-manager.com
   `
 
-    try {
-        const info = await transporter.sendMail({
-            from: `"SubCheck" <${process.env.SMTP_USER}>`,
-            to: customerEmail,
-            subject: `Invoice #${invoiceNumber} - Amount Due: ₹${total.toFixed(2)}`,
-            text: textContent,
-            html: htmlContent,
-        })
+  try {
+    const info = await transporter.sendMail({
+      from: `"SubCheck" <${process.env.SMTP_USER}>`,
+      to: customerEmail,
+      subject: `Invoice #${invoiceNumber} - Amount Due: ₹${total.toFixed(2)}`,
+      text: textContent,
+      html: htmlContent,
+    })
 
-        console.log('Invoice email sent:', info.messageId)
-        return { success: true, messageId: info.messageId }
-    } catch (error) {
-        console.error('Error sending invoice email:', error)
-        return { success: false, error: String(error) }
-    }
+    console.log('Invoice email sent:', info.messageId)
+    return { success: true, messageId: info.messageId }
+  } catch (error) {
+    console.error('Error sending invoice email:', error)
+    return { success: false, error: String(error) }
+  }
 }

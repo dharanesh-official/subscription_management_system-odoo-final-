@@ -98,6 +98,12 @@ export default async function InvoiceDetailsPage({ params }: { params: Promise<{
                 </div>
             </div>
 
+            <div className="mb-8 p-4 bg-muted/50 border-l-4 border-primary rounded">
+                <p className="text-sm text-muted-foreground">
+                    <strong>Note:</strong> This is a computer-generated invoice and does not require any physical signature.
+                </p>
+            </div>
+
             <div className="print:hidden flex justify-between pt-8 border-t">
                 <Link href="/admin/invoices">
                     <Button variant="outline">Back to Invoices</Button>
