@@ -95,7 +95,7 @@ export default async function SubscriptionsPage() {
                                     } className={
                                         sub.status === 'active' ? 'bg-green-600 hover:bg-green-700' :
                                             sub.status === 'confirmed' ? 'bg-blue-600 hover:bg-blue-700' :
-                                                sub.status === 'closed' ? 'bg-gray-600' :
+                                                sub.status === 'closed' ? 'bg-gray-600 text-white hover:bg-gray-700' :
                                                     ''
                                     }>
                                         {sub.status}

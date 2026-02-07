@@ -23,7 +23,7 @@ export default function SignupForm() {
         length: password.length > 8,
         uppercase: /[A-Z]/.test(password),
         lowercase: /[a-z]/.test(password),
-        special: /[!@#$%^&*(),.?":{}|<>]/.test(password),
+        special: /[!@#$%^&*(),.?":{}|<>]|_/.test(password),
     }
 
     const isPasswordValid = Object.values(passwordRequirements).every(Boolean)
@@ -47,6 +47,17 @@ export default function SignupForm() {
         }
     }, [error, router])
 
+    const [loading, setLoading] = useState(false)
+
+    const handleSubmit = async (formData: FormData) => {
+        setLoading(true)
+        const result = await signup(formData).catch(() => null)
+        // If signup redirects, loading stays true until page change.
+        // If correct, user is redirected. If error is returned via URL param,
+        // the useEffect above flips it off.
+        if (!result) setLoading(false)
+    }
+
     return (
         <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
@@ -62,7 +73,7 @@ export default function SignupForm() {
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <form action={signup} className="grid gap-4">
+                    <form action={handleSubmit} className="grid gap-4">
                         <div className="grid grid-cols-2 gap-4">
                             <div className="grid gap-2">
                                 <label htmlFor="first-name" className="text-sm font-medium leading-none">First name</label>
@@ -112,9 +123,9 @@ export default function SignupForm() {
                         <Button
                             type="submit"
                             className="w-full font-bold shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
-                            disabled={!isPasswordValid && password.length > 0}
+                            disabled={(!isPasswordValid && password.length > 0) || loading}
                         >
-                            Create account
+                            {loading ? 'Creating account...' : 'Create account'}
                         </Button>
                     </form>
 

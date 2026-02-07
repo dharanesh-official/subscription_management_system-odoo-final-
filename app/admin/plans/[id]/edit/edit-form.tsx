@@ -24,7 +24,12 @@ export default function EditPlanForm({ plan }: { plan: any }) {
 
     const handleSubmit = async (formData: FormData) => {
         setLoading(true)
-        await updateWithId(formData)
+        try {
+            await updateWithId(formData)
+        } catch (error) {
+            console.error(error)
+            setLoading(false)
+        }
     }
 
     return (

@@ -89,7 +89,10 @@ export default async function CustomerDashboard() {
                             <div className="py-8 text-center text-muted-foreground bg-muted/20 rounded-lg border border-dashed">
                                 No active subscription found.
                                 <br />
-                                <Button variant="link" className="mt-2 text-primary">Contact Sales to Subscribe</Button>
+                                <br />
+                                <a href="mailto:sales@subcheck.com">
+                                    <Button variant="link" className="mt-2 text-primary">Contact Sales to Subscribe</Button>
+                                </a>
                             </div>
                         )}
                     </CardContent>
@@ -100,8 +103,12 @@ export default async function CustomerDashboard() {
                         <CardTitle>Quick Actions</CardTitle>
                     </CardHeader>
                     <CardContent className="grid gap-2">
-                        <Button className="w-full" variant="outline">Contact Support</Button>
-                        <Button className="w-full" variant="secondary">Update Details</Button>
+                        <a href="mailto:support@subcheck.com" target="_blank" rel="noopener noreferrer">
+                            <Button className="w-full" variant="outline">Contact Support</Button>
+                        </a>
+                        <a href="mailto:support@subcheck.com?subject=Update Details" target="_blank" rel="noopener noreferrer">
+                            <Button className="w-full" variant="secondary">Update Details</Button>
+                        </a>
                     </CardContent>
                 </Card>
             </div>

@@ -22,6 +22,7 @@ import {
     Landmark
 } from "lucide-react"
 import { createClient } from "@/utils/supabase/server"
+import { NotificationButton } from "@/components/notification-button"
 
 import { cn } from "@/lib/utils"
 
@@ -57,10 +58,7 @@ export default async function Sidebar({ role, className }: SidebarProps) {
                         <Zap className="h-6 w-6" />
                         <span className="">SubCheck</span>
                     </Link>
-                    <Button variant="outline" size="icon" className="ml-auto h-8 w-8">
-                        <Briefcase className="h-4 w-4" />
-                        <span className="sr-only">Toggle notifications</span>
-                    </Button>
+                    <NotificationButton />
                 </div>
                 <div className="flex-1">
                     <nav className="grid items-start px-2 text-sm font-medium lg:px-4">

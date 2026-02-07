@@ -24,7 +24,12 @@ export default function CreateProductForm() {
 
     const handleSubmit = async (formData: FormData) => {
         setLoading(true)
-        await createProduct(formData)
+        try {
+            await createProduct(formData)
+        } catch (error) {
+            console.error(error)
+            setLoading(false)
+        }
     }
 
     return (
