@@ -1,4 +1,5 @@
 import { getTaxes, createTax } from "./actions"
+export const dynamic = 'force-dynamic'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -95,8 +96,8 @@ export default async function TaxesPage() {
 function Badge({ children, active }: { children: React.ReactNode, active: boolean }) {
     return (
         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${active
-                ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
-                : 'bg-slate-100 text-slate-800 border border-slate-200'
+            ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+            : 'bg-slate-100 text-slate-800 border border-slate-200'
             }`}>
             {children}
         </span>

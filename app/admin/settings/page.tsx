@@ -5,17 +5,23 @@ import { Switch } from "@/components/ui/switch"
 import { Button } from "@/components/ui/button"
 import { getSettings, updateSettings } from "./actions"
 
+export const dynamic = 'force-dynamic'
+
 export default async function SettingsPage() {
     const settings = await getSettings()
+
+    // Wrapper function with 'use server' to ensure it's treated correctly
+    async function handleUpdate(formData: FormData) {
+        'use server'
+        await updateSettings(formData)
+    }
 
     return (
         <div className="flex flex-col gap-6">
             <h1 className="text-3xl font-bold tracking-tight">System Settings</h1>
             <p className="text-muted-foreground">Manage your subscription engine configuration.</p>
 
-            <form action={async (formData) => {
-                await updateSettings(formData)
-            }} className="grid gap-6">
+            <form action={handleUpdate} className="grid gap-6">
                 <Card>
                     <CardHeader>
                         <CardTitle>Business Configuration</CardTitle>

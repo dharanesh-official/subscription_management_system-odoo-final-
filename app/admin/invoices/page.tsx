@@ -1,5 +1,6 @@
 
 import { createClient } from "@/utils/supabase/server"
+export const dynamic = 'force-dynamic'
 import { revalidatePath } from "next/cache"
 import { Button } from "@/components/ui/button"
 import {

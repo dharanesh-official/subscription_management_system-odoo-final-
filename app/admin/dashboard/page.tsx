@@ -2,6 +2,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { IndianRupee, Users, CreditCard, Activity } from "lucide-react"
 import { createClient } from '@/utils/supabase/server'
+export const dynamic = 'force-dynamic'
 
 export default async function AdminDashboard() {
     const supabase = await createClient()
