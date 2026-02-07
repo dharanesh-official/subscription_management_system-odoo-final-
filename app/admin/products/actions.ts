@@ -44,21 +44,24 @@ export async function updateProduct(id: string, formData: FormData) {
     const description = formData.get('description') as string
     const type = formData.get('type') as string
     const active = formData.get('active') === 'on'
-    const salesPrice = Number(formData.get('sales_price') || 0)
-    const costPrice = Number(formData.get('cost_price') || 0)
+    const salesVal = Number(formData.get('sales_price'))
+    const costVal = Number(formData.get('cost_price'))
+    // Ensure numeric
+    const salesPrice = isNaN(salesVal) ? 0 : salesVal
+    const costPrice = isNaN(costVal) ? 0 : costVal
 
-    const { error } = await supabase.from('products').update({
+    const { data: updated, error } = await supabase.from('products').update({
         name,
         description,
         type,
         active,
         sales_price: salesPrice,
         cost_price: costPrice,
-    }).eq('id', id)
+    }).eq('id', id).select()
 
-    if (error) {
-        console.error('Update product error:', error)
-        return redirect('/admin/products?error=Could not update product')
+    if (error || !updated || updated.length === 0) {
+        console.error('Update product error:', error || 'No Permission or ID not found')
+        return redirect('/admin/products?error=Update failed. Check permissions.')
     }
 
     revalidatePath('/admin/products')

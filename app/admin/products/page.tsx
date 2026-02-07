@@ -34,6 +34,7 @@ export default async function ProductsPage() {
                         <TableRow>
                             <TableHead>Name</TableHead>
                             <TableHead>Type</TableHead>
+                            <TableHead>Price (INR)</TableHead>
                             <TableHead>Status</TableHead>
                             <TableHead>Created</TableHead>
                             <TableHead className="w-[100px]">Actions</TableHead>
@@ -42,14 +43,15 @@ export default async function ProductsPage() {
                     <TableBody>
                         {!products || products.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={5} className="h-24 text-center">
+                                <TableCell colSpan={6} className="h-24 text-center">
                                     No products found.
                                 </TableCell>
                             </TableRow>
                         ) : (products.map((product: any) => (
                             <TableRow key={product.id}>
                                 <TableCell className="font-medium">{product.name}</TableCell>
-                                <TableCell>{product.type}</TableCell>
+                                <TableCell className="capitalize">{product.type}</TableCell>
+                                <TableCell>{product.sales_price ? `₹${product.sales_price}` : '-'}</TableCell>
                                 <TableCell>
                                     <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${product.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                                         {product.active ? 'Active' : 'Inactive'}
