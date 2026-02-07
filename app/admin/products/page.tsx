@@ -10,7 +10,8 @@ import {
     TableRow,
 } from "@/components/ui/table"
 import Link from "next/link"
-import { Plus, MoreHorizontal } from "lucide-react"
+import { Plus } from "lucide-react"
+import DeleteProductButton from "./delete-button"
 
 export default async function ProductsPage() {
     const supabase = await createClient()
@@ -39,13 +40,13 @@ export default async function ProductsPage() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {products?.length === 0 ? (
+                        {!products || products.length === 0 ? (
                             <TableRow>
                                 <TableCell colSpan={5} className="h-24 text-center">
                                     No products found.
                                 </TableCell>
                             </TableRow>
-                        ) : (products?.map((product: any) => (
+                        ) : (products.map((product: any) => (
                             <TableRow key={product.id}>
                                 <TableCell className="font-medium">{product.name}</TableCell>
                                 <TableCell>{product.type}</TableCell>
@@ -56,10 +57,12 @@ export default async function ProductsPage() {
                                 </TableCell>
                                 <TableCell>{new Date(product.created_at).toLocaleDateString()}</TableCell>
                                 <TableCell>
-                                    <Button variant="ghost" size="icon">
-                                        <MoreHorizontal className="h-4 w-4" />
-                                        <span className="sr-only">Actions</span>
-                                    </Button>
+                                    <div className="flex gap-2">
+                                        <Link href={`/admin/products/${product.id}/edit`}>
+                                            <Button variant="ghost" size="sm">Edit</Button>
+                                        </Link>
+                                        <DeleteProductButton id={product.id} />
+                                    </div>
                                 </TableCell>
                             </TableRow>
                         )))}

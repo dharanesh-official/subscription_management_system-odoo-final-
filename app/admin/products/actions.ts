@@ -64,7 +64,10 @@ export async function deleteProduct(id: string) {
 
     if (error) {
         console.error('Delete product error:', error)
+        if (error.code === '23503') return { error: 'Product used in plans/subscriptions' }
+        return { error: 'Could not delete product' }
     }
+    return { success: true }
 
     revalidatePath('/admin/products')
 }
