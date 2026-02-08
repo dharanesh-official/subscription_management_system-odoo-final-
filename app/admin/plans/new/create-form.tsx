@@ -17,9 +17,10 @@ import { useState } from "react"
 import Link from "next/link"
 import { Loader2 } from "lucide-react"
 
-export default function CreatePlanForm({ products }: { products: any[] }) {
+export default function CreatePlanForm({ products, discounts }: { products: any[], discounts: any[] }) {
     const [loading, setLoading] = useState(false)
     const [productId, setProductId] = useState('')
+    const [discountId, setDiscountId] = useState('')
     const [interval, setInterval] = useState('monthly')
 
     const handleSubmit = async (formData: FormData) => {
@@ -62,6 +63,23 @@ export default function CreatePlanForm({ products }: { products: any[] }) {
                             <span className="absolute left-3 top-2.5 text-gray-500">₹</span>
                             <Input id="amount" name="amount" type="number" step="0.01" min="0" placeholder="0.00" className="pl-7" required />
                         </div>
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="discount">Discount (Optional)</Label>
+                        <input type="hidden" name="discount_id" value={discountId} />
+                        <Select value={discountId} onValueChange={setDiscountId}>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select a discount..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="none">No Discount</SelectItem>
+                                {discounts.map(d => (
+                                    <SelectItem key={d.id} value={d.id}>
+                                        {d.name} ({d.type === 'percentage' ? `${d.value}%` : `₹${d.value}`})
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                     </div>
                     <div className="grid gap-2">
                         <Label htmlFor="interval">Billing Interval</Label>

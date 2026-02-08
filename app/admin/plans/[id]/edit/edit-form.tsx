@@ -17,9 +17,10 @@ import { useState } from "react"
 import Link from "next/link"
 import { Loader2 } from "lucide-react"
 
-export default function EditPlanForm({ plan }: { plan: any }) {
+export default function EditPlanForm({ plan, discounts }: { plan: any, discounts: any[] }) {
     const [loading, setLoading] = useState(false)
     const [interval, setInterval] = useState(plan.interval)
+    const [discountId, setDiscountId] = useState(plan.discount_id || 'none')
 
     const updateWithId = updatePlan.bind(null, plan.id)
 
@@ -58,6 +59,23 @@ export default function EditPlanForm({ plan }: { plan: any }) {
                             <span className="absolute left-3 top-2.5 text-gray-500">₹</span>
                             <Input id="amount" name="amount" type="number" step="0.01" min="0" defaultValue={plan.amount} className="pl-7" required />
                         </div>
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="discount">Discount (Optional)</Label>
+                        <input type="hidden" name="discount_id" value={discountId} />
+                        <Select value={discountId} onValueChange={setDiscountId}>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select a discount..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="none">No Discount</SelectItem>
+                                {discounts.map(d => (
+                                    <SelectItem key={d.id} value={d.id}>
+                                        {d.name} ({d.type === 'percentage' ? `${d.value}%` : `₹${d.value}`})
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                     </div>
                     <div className="grid gap-2">
                         <Label htmlFor="interval">Billing Interval</Label>

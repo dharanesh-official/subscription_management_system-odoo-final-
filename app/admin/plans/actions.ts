@@ -22,6 +22,8 @@ export async function createPlan(formData: FormData) {
     const visibility = formData.get('visibility') as string || 'private'
     const startDate = formData.get('start_date') as string
     const endDate = formData.get('end_date') as string
+    const discountId = formData.get('discount_id') as string
+    const discount_id = (discountId && discountId !== 'none') ? discountId : null
 
     if (!productId || !name || isNaN(amount)) {
         return redirect('/admin/plans/new?error=Missing required fields')
@@ -42,7 +44,8 @@ export async function createPlan(formData: FormData) {
         visibility,
         start_date: startDate || null,
         end_date: endDate || null,
-        currency: 'inr'
+        currency: 'inr',
+        discount_id
     })
 
     if (error) {
@@ -70,6 +73,8 @@ export async function updatePlan(id: string, formData: FormData) {
     const visibility = formData.get('visibility') as string || 'private'
     const startDate = formData.get('start_date') as string
     const endDate = formData.get('end_date') as string
+    const discountId = formData.get('discount_id') as string
+    const discount_id = (discountId && discountId !== 'none') ? discountId : null
 
     const { data: updated, error } = await supabase.from('plans').update({
         name,
@@ -85,6 +90,7 @@ export async function updatePlan(id: string, formData: FormData) {
         visibility,
         start_date: startDate || null,
         end_date: endDate || null,
+        discount_id
     }).eq('id', id).select()
 
     if (error || !updated || updated.length === 0) {

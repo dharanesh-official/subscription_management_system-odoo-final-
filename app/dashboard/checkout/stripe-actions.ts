@@ -19,8 +19,18 @@ export async function createStripeSession(planId: string) {
     }
 
     // 2. Get Plan
-    const { data: plan } = await supabase.from('plans').select('*').eq('id', planId).single()
+    const { data: plan } = await supabase.from('plans').select('*, discounts(*)').eq('id', planId).single()
     if (!plan) return { error: 'Plan not found' }
+
+    let amount = Number(plan.amount)
+    if (plan.discounts && plan.discounts.active) {
+        if (plan.discounts.type === 'percentage') {
+            amount = amount * (1 - plan.discounts.value / 100)
+        } else {
+            amount = Math.max(0, amount - plan.discounts.value)
+        }
+    }
+    const finalAmount = Math.round(amount * 100) // paisa
 
     // 3. Get or Create Customer (DB)
     let { data: customer } = await supabase
@@ -83,7 +93,7 @@ export async function createStripeSession(planId: string) {
                             name: plan.name,
                             description: plan.description || 'Subscription',
                         },
-                        unit_amount: Math.round(plan.amount * 100), // Stripe expects paisa
+                        unit_amount: finalAmount, // Stripe expects paisa
                     },
                     quantity: 1,
                 },

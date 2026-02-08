@@ -31,7 +31,7 @@ export default async function CheckoutPage({
 
     const { data: plan } = await supabase
         .from('plans')
-        .select('*, products(*)')
+        .select('*, products(*), discounts(*)')
         .eq('id', planId)
         .single()
 
@@ -65,7 +65,18 @@ export default async function CheckoutPage({
                             <p className="text-sm text-muted-foreground">{plan.products?.name}</p>
                         </div>
                         <div className="text-right">
-                            <div className="font-bold text-lg">₹{plan.amount}</div>
+                            {plan.discounts && plan.discounts.active ? (
+                                <>
+                                    <div className="font-bold text-lg text-green-600">
+                                        ₹{(plan.discounts.type === 'percentage'
+                                            ? plan.amount * (1 - plan.discounts.value / 100)
+                                            : Math.max(0, plan.amount - plan.discounts.value)).toFixed(2)}
+                                    </div>
+                                    <div className="text-xs text-muted-foreground line-through">₹{plan.amount}</div>
+                                </>
+                            ) : (
+                                <div className="font-bold text-lg">₹{plan.amount}</div>
+                            )}
                             <div className="text-xs text-muted-foreground capitalize">/ {plan.interval}</div>
                         </div>
                     </div>
@@ -81,7 +92,12 @@ export default async function CheckoutPage({
                         </div>
                         <div className="flex justify-between pt-2 border-t font-medium">
                             <span>Total Due Today</span>
-                            <span>{plan.trial_period_days > 0 ? '₹0.00' : `₹${plan.amount}`}</span>
+                            <span>{plan.trial_period_days > 0 ? '₹0.00' : `₹${(plan.discounts && plan.discounts.active
+                                ? (plan.discounts.type === 'percentage'
+                                    ? plan.amount * (1 - plan.discounts.value / 100)
+                                    : Math.max(0, plan.amount - plan.discounts.value))
+                                : plan.amount).toFixed(2)}`}
+                            </span>
                         </div>
                     </div>
                 </CardContent>
@@ -95,7 +111,14 @@ export default async function CheckoutPage({
                         </form>
                     ) : (
                         <div className="w-full">
-                            <StripeCheckoutButton planId={plan.id} amount={plan.amount} />
+                            <StripeCheckoutButton
+                                planId={plan.id}
+                                amount={Number((plan.discounts && plan.discounts.active
+                                    ? (plan.discounts.type === 'percentage'
+                                        ? plan.amount * (1 - plan.discounts.value / 100)
+                                        : Math.max(0, plan.amount - plan.discounts.value))
+                                    : plan.amount).toFixed(2))}
+                            />
                         </div>
                     )}
                 </CardFooter>
