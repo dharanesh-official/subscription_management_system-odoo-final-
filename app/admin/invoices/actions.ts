@@ -23,6 +23,12 @@ export async function markInvoicePaid(id: string) {
     revalidatePath('/admin/invoices')
 }
 
+export async function confirmInvoice(id: string) {
+    const supabase = await createClient()
+    await supabase.from('invoices').update({ status: 'confirmed' }).eq('id', id)
+    revalidatePath('/admin/invoices')
+}
+
 export async function sendInvoiceManually(invoiceId: string) {
     const supabase = await createClient()
 

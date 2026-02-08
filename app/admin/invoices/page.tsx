@@ -1,7 +1,5 @@
-
 import { createClient } from "@/utils/supabase/server"
 export const dynamic = 'force-dynamic'
-import { revalidatePath } from "next/cache"
 import { Button } from "@/components/ui/button"
 import {
     Table,
@@ -11,12 +9,12 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
-import Link from "next/link"
 import { Badge } from "@/components/ui/badge"
 import { formatCurrency } from "@/lib/utils"
-import { sendInvoiceManually, cancelInvoice } from "./actions"
+import { sendInvoiceManually, cancelInvoice, confirmInvoice, markInvoicePaid } from "./actions"
 import SendInvoiceButton from "./send-button"
-import { Printer, XCircle } from "lucide-react"
+import PrintInvoiceButton from "./print-button"
+import { XCircle } from "lucide-react"
 
 export default async function InvoicesPage() {
     const supabase = await createClient()
@@ -38,22 +36,6 @@ export default async function InvoicesPage() {
         } catch (e) {
             return 'Invalid Date'
         }
-    }
-
-    // Server action for confirming invoice
-    async function confirmInvoice(invoiceId: string) {
-        'use server'
-        const supabase = await createClient()
-        await supabase.from('invoices').update({ status: 'confirmed' }).eq('id', invoiceId)
-        revalidatePath('/admin/invoices')
-    }
-
-    // Server action for marking invoice as paid
-    async function markInvoicePaid(invoiceId: string) {
-        'use server'
-        const supabase = await createClient()
-        await supabase.from('invoices').update({ status: 'paid' }).eq('id', invoiceId)
-        revalidatePath('/admin/invoices')
     }
 
     return (
@@ -137,9 +119,7 @@ export default async function InvoicesPage() {
                                                 </Button>
                                             </form>
                                         )}
-                                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => window.print()}>
-                                            <Printer className="h-4 w-4" />
-                                        </Button>
+                                        <PrintInvoiceButton />
                                     </div>
                                 </TableCell>
                             </TableRow>
