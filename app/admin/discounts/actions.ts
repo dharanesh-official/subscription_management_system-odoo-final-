@@ -5,7 +5,10 @@ import { revalidatePath } from 'next/cache'
 
 export async function getDiscounts() {
     const supabase = await createClient()
-    const { data } = await supabase.from('discounts').select('*').order('created_at', { ascending: false })
+    const { data } = await supabase
+        .from('discounts')
+        .select('*, products(name)')
+        .order('created_at', { ascending: false })
     return data || []
 }
 
@@ -27,6 +30,7 @@ export async function createDiscount(formData: FormData) {
     const active = formData.get('active') === 'on'
     const valid_from = formData.get('valid_from') as string
     const valid_until = formData.get('valid_until') as string
+    const product_id = formData.get('product_id') as string
 
     const { error } = await supabase.from('discounts').insert({
         name,
@@ -36,7 +40,8 @@ export async function createDiscount(formData: FormData) {
         min_amount,
         active,
         valid_from: valid_from || null,
-        valid_until: valid_until || null
+        valid_until: valid_until || null,
+        product_id: (product_id && product_id !== 'all') ? product_id : null
     })
 
     if (error) return { error: error.message }

@@ -25,7 +25,10 @@ export default async function EditPlanPage({ params }: { params: Promise<{ id: s
         notFound()
     }
 
-    const { data: discounts } = await supabase.from('discounts').select('id, name, value, type').eq('active', true)
+    const { data: discounts } = await supabase
+        .from('discounts')
+        .select('id, name, value, type, product_id, products(name)')
+        .eq('active', true)
 
     return <EditPlanForm plan={plan} discounts={discounts || []} />
 }

@@ -19,6 +19,11 @@ export const dynamic = 'force-dynamic'
 export default async function DiscountsPage() {
     const discounts = await getDiscounts()
 
+    // Fetch products for product-specific discounts
+    const { createClient } = await import('@/utils/supabase/server')
+    const supabase = await createClient()
+    const { data: products } = await supabase.from('products').select('id, name').eq('active', true)
+
     async function handleCreate(formData: FormData) {
         'use server'
         await createDiscount(formData)
@@ -47,6 +52,20 @@ export default async function DiscountsPage() {
                         <div className="grid gap-2">
                             <Label htmlFor="description">Description</Label>
                             <Input id="description" name="description" placeholder="Special festival offer" />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="product_id">Apply To</Label>
+                            <Select name="product_id" defaultValue="all">
+                                <SelectTrigger>
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">All Products (Global)</SelectItem>
+                                    {products?.map(p => (
+                                        <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="grid gap-2">
@@ -95,6 +114,7 @@ export default async function DiscountsPage() {
                         <TableHeader>
                             <TableRow className="bg-muted/50">
                                 <TableHead>Discount Name</TableHead>
+                                <TableHead>Applies To</TableHead>
                                 <TableHead>Description</TableHead>
                                 <TableHead>Value</TableHead>
                                 <TableHead>Valid Period</TableHead>
@@ -104,7 +124,7 @@ export default async function DiscountsPage() {
                         <TableBody>
                             {discounts.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={5} className="text-center py-12 text-muted-foreground italic">
+                                    <TableCell colSpan={6} className="text-center py-12 text-muted-foreground italic">
                                         No discount rules created.
                                     </TableCell>
                                 </TableRow>
@@ -112,6 +132,17 @@ export default async function DiscountsPage() {
                                 discounts.map((d) => (
                                     <TableRow key={d.id} className="hover:bg-muted/30 transition-colors">
                                         <TableCell className="font-medium">{d.name}</TableCell>
+                                        <TableCell>
+                                            {d.products ? (
+                                                <span className="text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                                                    {d.products.name}
+                                                </span>
+                                            ) : (
+                                                <span className="text-sm bg-purple-100 text-purple-800 px-2 py-1 rounded">
+                                                    Global
+                                                </span>
+                                            )}
+                                        </TableCell>
                                         <TableCell className="text-sm text-muted-foreground">{d.description || '-'}</TableCell>
                                         <TableCell>
                                             {d.type === 'percentage' ? `${d.value}%` : `₹${d.value}`}

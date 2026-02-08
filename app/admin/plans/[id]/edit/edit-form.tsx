@@ -69,11 +69,14 @@ export default function EditPlanForm({ plan, discounts }: { plan: any, discounts
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="none">No Discount</SelectItem>
-                                {discounts.map(d => (
-                                    <SelectItem key={d.id} value={d.id}>
-                                        {d.name} ({d.type === 'percentage' ? `${d.value}%` : `₹${d.value}`})
-                                    </SelectItem>
-                                ))}
+                                {discounts
+                                    .filter(d => !d.product_id || d.product_id === plan.product_id)
+                                    .map(d => (
+                                        <SelectItem key={d.id} value={d.id}>
+                                            {d.name} ({d.type === 'percentage' ? `${d.value}%` : `₹${d.value}`})
+                                            {d.product_id ? ' - Product Specific' : ' - Global'}
+                                        </SelectItem>
+                                    ))}
                             </SelectContent>
                         </Select>
                     </div>

@@ -73,11 +73,14 @@ export default function CreatePlanForm({ products, discounts }: { products: any[
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="none">No Discount</SelectItem>
-                                {discounts.map(d => (
-                                    <SelectItem key={d.id} value={d.id}>
-                                        {d.name} ({d.type === 'percentage' ? `${d.value}%` : `₹${d.value}`})
-                                    </SelectItem>
-                                ))}
+                                {discounts
+                                    .filter(d => !d.product_id || d.product_id === productId)
+                                    .map(d => (
+                                        <SelectItem key={d.id} value={d.id}>
+                                            {d.name} ({d.type === 'percentage' ? `${d.value}%` : `₹${d.value}`})
+                                            {d.product_id ? ' - Product Specific' : ' - Global'}
+                                        </SelectItem>
+                                    ))}
                             </SelectContent>
                         </Select>
                     </div>
