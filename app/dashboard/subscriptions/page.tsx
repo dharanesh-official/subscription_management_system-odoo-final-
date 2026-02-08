@@ -83,7 +83,9 @@ export default async function MySubscriptionsPage() {
                                     {sub.current_period_end ? new Date(sub.current_period_end).toLocaleDateString() : '-'}
                                 </TableCell>
                                 <TableCell>
-                                    <Button variant="ghost" size="sm" disabled>View</Button>
+                                    <Button variant="ghost" size="sm" asChild>
+                                        <a href={`/dashboard/subscriptions/${sub.id}`}>View</a>
+                                    </Button>
                                 </TableCell>
                             </TableRow>
                         )))}
