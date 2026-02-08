@@ -139,6 +139,20 @@ export async function signup(formData: FormData) {
 
     // If email confirmation is disabled, user is signed in immediately
     if (data.session) {
+        // Automatically create a customer record
+        const { error: customerError } = await supabase
+            .from('customers')
+            .insert({
+                name: fullName,
+                email: email,
+            })
+            .select() // Ensure we don't need the return value but select avoids error
+
+        if (customerError) {
+            console.error("Auto Customer Creation Error:", customerError)
+            // We don't block here, the user can fix it later or we retry
+        }
+
         sendWelcomeEmail(email, fullName).catch(e => console.error(e))
         revalidatePath('/', 'layout')
         redirect('/dashboard')
