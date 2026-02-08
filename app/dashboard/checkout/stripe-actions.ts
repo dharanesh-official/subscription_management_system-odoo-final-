@@ -41,23 +41,27 @@ export async function createStripeSession(planId: string) {
             .select()
             .single()
 
-        if (createError) return { error: 'Failed to create customer profile' }
-        customer = newCustomer
+        if (createError) {
+            console.error("Stripe Customer Create Error:", createError)
+            return { error: 'Failed to create customer profile' }
+        }
+        customer = newCustomer.data // Fix: insert returns { data: ..., error: ... }
     }
 
+    // 4. Create Subscription (Quotation status)
     // 4. Create Subscription (Quotation status)
     const startDate = new Date().toISOString()
     const { data: subscription, error: subError } = await supabase.from('subscriptions').insert({
         customer_id: customer.id,
         plan_id: planId,
         status: 'quotation',
-        start_date: startDate,
-        currency: 'inr',
-        quantity: 1,
-        billing_address: 'To be collected',
+        current_period_start: startDate
     }).select().single()
 
-    if (subError) return { error: 'Failed to create subscription' }
+    if (subError) {
+        console.error("Stripe Subscription Create Error:", subError)
+        return { error: 'Failed to create subscription: ' + subError.message }
+    }
 
     // 5. Create Stripe Checkout Session
     // robust origin detection
