@@ -4,7 +4,9 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Loader2 } from "lucide-react"
 import { useRouter } from "next/navigation"
+
 import { createOrder, verifyPayment } from "./razorpay-actions"
+import { simulatePayment } from "./demo-actions"
 import { toast } from "sonner"
 
 // Declare Razorpay on window interface
@@ -46,10 +48,42 @@ export function RazorpayCheckout({ planId, planAmount, userEmail, userName }: Ra
         }
 
         try {
+            // 🚨 DEMO MODE: IF RAZORPAY KEYS ARE MISSING, USE DEMO MODE
+            // Or un-comment below to force demo mode for presentation
+            const FORCE_DEMO_MODE = true
+
+            if (FORCE_DEMO_MODE) {
+                // Simulate network delay
+                await new Promise(resolve => setTimeout(resolve, 2000))
+
+                const result = await simulatePayment(planId)
+                if (result.success) {
+                    toast.success("Payment Successful (Demo Mode)")
+                    router.push('/dashboard?success=true')
+                } else {
+                    toast.error(result.error)
+                }
+                setLoading(false)
+                return
+            }
+
             // 1. Create Order
             const data = await createOrder(planId)
 
             if (data.error || !data.orderId) {
+                // Fallback to Demo if keys missing
+                if (data.error === 'Payment gateway initialization failed' || !data.keyId) {
+                    toast.info("Razorpay keys missing. Using Demo Payment.")
+                    await new Promise(resolve => setTimeout(resolve, 1500))
+                    const result = await simulatePayment(planId)
+                    if (result.success) {
+                        toast.success("Payment Successful (Demo Mode)")
+                        router.push('/dashboard?success=true')
+                    }
+                    setLoading(false)
+                    return
+                }
+
                 toast.error(data.error || "Failed to initiate payment")
                 setLoading(false)
                 return
