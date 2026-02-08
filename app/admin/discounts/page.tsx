@@ -53,11 +53,11 @@ export default async function DiscountsPage() {
                     <form action={handleCreate} className="space-y-4">
                         <div className="grid gap-2">
                             <Label htmlFor="name">Discount Name</Label>
-                            <Input id="name" name="name" placeholder="Summer Sale" required />
+                            <Input id="name" name="name" placeholder="Summer Sale" autoComplete="off" required />
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="description">Description</Label>
-                            <Input id="description" name="description" placeholder="Special festival offer" />
+                            <Input id="description" name="description" placeholder="Special festival offer" autoComplete="off" />
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="product_id">Apply To</Label>
@@ -88,12 +88,12 @@ export default async function DiscountsPage() {
                             </div>
                             <div className="grid gap-2">
                                 <Label htmlFor="value">Value</Label>
-                                <Input id="value" name="value" type="number" step="0.01" placeholder="10" required />
+                                <Input id="value" name="value" type="number" step="0.01" placeholder="10" autoComplete="off" required />
                             </div>
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="min_amount">Min Purchase (Optional)</Label>
-                            <Input id="min_amount" name="min_amount" type="number" placeholder="500" />
+                            <Input id="min_amount" name="min_amount" type="number" placeholder="500" autoComplete="off" />
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="grid gap-2">
