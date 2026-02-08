@@ -4,6 +4,7 @@ import { createClient } from "@/utils/supabase/server"
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import Stripe from 'stripe'
+import { sendInvoiceEmail } from "@/lib/email"
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_YOUR_STRIPE_KEY', {
     apiVersion: '2025-01-27.acacia',
@@ -35,7 +36,7 @@ export async function handleStripeSuccess(checkoutSessionId: string, subscriptio
             // 0. Fetch Subscription details first (we need customer_id and amount)
             const { data: sub, error: fetchError } = await adminDb
                 .from('subscriptions')
-                .select('customer_id, plans(amount)')
+                .select('customer_id, plans(name, amount), customers(name, email)')
                 .eq('id', subscriptionId)
                 .single()
 
@@ -45,7 +46,9 @@ export async function handleStripeSuccess(checkoutSessionId: string, subscriptio
             }
 
             const planData = sub.plans as any
+            const customerData = sub.customers as any
             const amount = Number((Array.isArray(planData) ? planData[0]?.amount : planData?.amount) || 0)
+            const planName = (Array.isArray(planData) ? planData[0]?.name : planData?.name) || 'Subscription'
 
             // 1. Update Subscription directly
             const { error: updateError } = await adminDb
@@ -57,12 +60,10 @@ export async function handleStripeSuccess(checkoutSessionId: string, subscriptio
 
             if (updateError) {
                 console.error("Failed to update subscription (Bypass)", updateError)
-                // If this fails, we probably can't proceed, but we'll try to ensure we don't block everything if it's just a "field not found" issue
                 return { error: "Failed to activate subscription. " + updateError.message }
             }
 
             // 2. Create Invoice
-            // We create a paid invoice immediately
             const { data: newInvoice, error: invError } = await adminDb
                 .from('invoices')
                 .insert({
@@ -79,11 +80,9 @@ export async function handleStripeSuccess(checkoutSessionId: string, subscriptio
 
             if (invError) {
                 console.error("Failed to generate invoice", invError)
-                // Non-blocking, but bad.
             }
 
             // 3. Create Payment
-            // If invoice was created, link it. Otherwise just record payment.
             const transactionId = `BYPASS_${subscriptionId}`
             const existingPaymentCheck = await adminDb.from('payments').select('id').eq('transaction_id', transactionId).maybeSingle()
 
@@ -96,6 +95,23 @@ export async function handleStripeSuccess(checkoutSessionId: string, subscriptio
                     payment_method: 'Manual/Bypass',
                     transaction_id: transactionId,
                     status: 'posted'
+                })
+            }
+
+            // 4. Send Email
+            if (newInvoice && customerData?.email) {
+                await sendInvoiceEmail({
+                    customerName: customerData.name || 'Valued Customer',
+                    customerEmail: customerData.email,
+                    invoiceId: newInvoice.id,
+                    invoiceNumber: newInvoice.id.slice(0, 8).toUpperCase(),
+                    amount: amount,
+                    dueDate: newInvoice.due_date,
+                    planName: planName,
+                    quantity: 1, // Defaulting to 1 for now as subscription quantity wasn't fetched explicitly but typically 1
+                    subtotal: amount,
+                    tax: 0, // Simplified tax handling for bypass
+                    total: amount,
                 })
             }
 
@@ -119,22 +135,67 @@ export async function handleStripeSuccess(checkoutSessionId: string, subscriptio
                 return { error: "Payment received but internal update failed. Contact support." }
             }
 
-            // 2. Create Payment Record (if not already exists via webhook)
-            // Check if payment already recorded to avoid dupes
-            const { data: existingPayment } = await supabase.from('payments').select('id').eq('transaction_id', session.payment_intent as string).maybeSingle()
+            // 2. Create Invoice & Payment
+            // Fetch necessary details
+            const { data: sub } = await supabase.from('subscriptions')
+                .select('customer_id, quantity, plans(name, amount), customers(name, email)')
+                .eq('id', subscriptionId)
+                .single()
 
-            if (!existingPayment) {
-                // Fetch sub for info
-                const { data: sub } = await supabase.from('subscriptions').select('customer_id, plans(amount)').eq('id', subscriptionId).single()
-                if (sub) {
-                    const planData = sub.plans as any;
+            if (sub) {
+                const planData = sub.plans as any
+                const customerData = sub.customers as any
+                const amount = Number((Array.isArray(planData) ? planData[0]?.amount : planData?.amount) || session.amount_total || 0)
+                const planName = (Array.isArray(planData) ? planData[0]?.name : planData?.name) || 'Subscription'
+                const quantity = sub.quantity || 1
+
+                // Create Invoice
+                const { data: newInvoice } = await supabase
+                    .from('invoices')
+                    .insert({
+                        customer_id: sub.customer_id,
+                        subscription_id: subscriptionId,
+                        amount_due: amount, // Assuming amount is total
+                        amount_paid: amount,
+                        status: 'paid',
+                        paid_at: new Date().toISOString(),
+                        due_date: new Date().toISOString(),
+                    })
+                    .select()
+                    .single()
+
+                // Create Payment
+                const { data: existingPayment } = await supabase.from('payments').select('id').eq('transaction_id', session.payment_intent as string).maybeSingle()
+
+                if (!existingPayment) {
                     await supabase.from('payments').insert({
                         customer_id: sub.customer_id,
-                        amount: (Array.isArray(planData) ? planData[0]?.amount : planData?.amount) || session.amount_total || 0,
+                        invoice_id: newInvoice?.id || null,
+                        amount: amount,
                         payment_date: new Date().toISOString(),
                         payment_method: 'stripe',
                         transaction_id: session.payment_intent as string,
                         status: 'posted'
+                    })
+                }
+
+                // Send Email
+                if (newInvoice && customerData?.email) {
+                    const subtotal = amount // Simplified logic
+                    const tax = 0 // Need proper tax calculation logic if applicable, currently assumed included or 0
+
+                    await sendInvoiceEmail({
+                        customerName: customerData.name || 'Valued Customer',
+                        customerEmail: customerData.email,
+                        invoiceId: newInvoice.id,
+                        invoiceNumber: newInvoice.id.slice(0, 8).toUpperCase(),
+                        amount: amount,
+                        dueDate: newInvoice.due_date,
+                        planName: planName,
+                        quantity: quantity,
+                        subtotal: subtotal,
+                        tax: tax,
+                        total: amount,
                     })
                 }
             }
