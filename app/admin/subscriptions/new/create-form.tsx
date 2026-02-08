@@ -22,12 +22,12 @@ export default function CreateSubscriptionForm({ customers, plans, templates }: 
     const [loading, setLoading] = useState(false)
     const [customerId, setCustomerId] = useState('')
     const [status, setStatus] = useState('draft')
-    const [lines, setLines] = useState([{ planId: '', quantity: 1 }])
+    const [lines, setLines] = useState([{ id: '1', planId: '', quantity: 1 }])
 
     const selectedCustomer = customers.find(c => c.id === customerId)
 
-    const addLine = () => setLines([...lines, { planId: '', quantity: 1 }])
-    const removeLine = (index: number) => setLines(lines.filter((_, i) => i !== index))
+    const addLine = () => setLines([...lines, { id: Math.random().toString(36).substr(2, 9), planId: '', quantity: 1 }])
+    const removeLine = (id: string) => setLines(lines.filter(l => l.id !== id))
     const updateLine = (index: number, field: string, value: any) => {
         const newLines = [...lines]
         newLines[index] = { ...newLines[index], [field]: value }
@@ -43,10 +43,11 @@ export default function CreateSubscriptionForm({ customers, plans, templates }: 
             const plan = plans.find(p => p.product_id === tl.product_id)
             return {
                 planId: plan?.id || '',
-                quantity: tl.quantity
+                quantity: tl.quantity,
+                id: Math.random().toString(36).substr(2, 9)
             }
         })
-        setLines(newLines.length > 0 ? newLines : [{ planId: '', quantity: 1 }])
+        setLines(newLines.length > 0 ? newLines : [{ id: Math.random().toString(36), planId: '', quantity: 1 }])
     }
 
     // Calculate Estimates
@@ -109,12 +110,12 @@ export default function CreateSubscriptionForm({ customers, plans, templates }: 
                             <div className="space-y-4 border-t pt-6">
                                 <Label>Order Lines</Label>
                                 {lines.map((line, index) => (
-                                    <div key={index} className="grid grid-cols-12 gap-4 items-end bg-muted/30 p-3 rounded-md border border-dashed">
+                                    <div key={line.id} className="grid grid-cols-12 gap-4 items-end bg-muted/30 p-3 rounded-md border border-dashed relative">
                                         <div className="col-span-6">
                                             <Label className="text-[10px] uppercase text-muted-foreground">Product / Plan</Label>
                                             <input type="hidden" name={`lines[${index}].plan_id`} value={line.planId} />
                                             <Select value={line.planId} onValueChange={(val) => updateLine(index, 'planId', val)}>
-                                                <SelectTrigger className="bg-background">
+                                                <SelectTrigger>
                                                     <SelectValue placeholder="Select Plan" />
                                                 </SelectTrigger>
                                                 <SelectContent>
@@ -147,7 +148,7 @@ export default function CreateSubscriptionForm({ customers, plans, templates }: 
                                                 variant="ghost"
                                                 size="icon"
                                                 className="text-destructive h-9 w-9"
-                                                onClick={() => removeLine(index)}
+                                                onClick={() => removeLine(line.id)}
                                                 disabled={lines.length === 1}
                                             >
                                                 <Trash2 className="h-4 w-4" />
