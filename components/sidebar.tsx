@@ -19,7 +19,8 @@ import {
     Percent,
     Tag,
     BarChart3,
-    Landmark
+    Landmark,
+    Receipt
 } from "lucide-react"
 import { createClient } from "@/utils/supabase/server"
 import { NotificationButton } from "@/components/notification-button"
@@ -119,6 +120,13 @@ export default async function Sidebar({ role, className }: SidebarProps) {
                                 >
                                     <FileText className="h-4 w-4" />
                                     Quotations
+                                </Link>
+                                <Link
+                                    href="/admin/invoices"
+                                    className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
+                                >
+                                    <Receipt className="h-4 w-4" />
+                                    Invoices
                                 </Link>
                                 <Link
                                     href="/admin/taxes"
