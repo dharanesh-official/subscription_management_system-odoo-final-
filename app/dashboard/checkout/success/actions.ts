@@ -51,8 +51,7 @@ export async function handleStripeSuccess(checkoutSessionId: string, subscriptio
             const { error: updateError } = await adminDb
                 .from('subscriptions')
                 .update({
-                    status: 'active',
-                    billing_address: 'Bypass Payment - No Address'
+                    status: 'active'
                 })
                 .eq('id', subscriptionId)
 
@@ -111,8 +110,7 @@ export async function handleStripeSuccess(checkoutSessionId: string, subscriptio
             const { error: updateError } = await supabase
                 .from('subscriptions')
                 .update({
-                    status: 'active',
-                    billing_address: session.customer_details?.address?.line1 || 'Stripe Collected'
+                    status: 'active'
                 })
                 .eq('id', subscriptionId)
 
