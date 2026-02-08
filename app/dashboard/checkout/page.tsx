@@ -3,7 +3,9 @@ import { createClient } from "@/utils/supabase/server"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Loader2 } from "lucide-react"
+
 import { redirect } from "next/navigation"
+import { RazorpayCheckout } from "./razorpay-checkout"
 
 export const dynamic = 'force-dynamic'
 
@@ -84,12 +86,18 @@ export default async function CheckoutPage({
                     </div>
                 </CardContent>
                 <CardFooter>
-                    <form action={createSubscriptionAction} className="w-full">
-                        <input type="hidden" name="plan_id" value={plan.id} />
-                        <Button type="submit" className="w-full" size="lg">
-                            Confirm Subscription
-                        </Button>
-                    </form>
+                    {plan.trial_period_days > 0 ? (
+                        <form action={createSubscriptionAction} className="w-full">
+                            <input type="hidden" name="plan_id" value={plan.id} />
+                            <Button type="submit" className="w-full" size="lg">
+                                Start Free Trial
+                            </Button>
+                        </form>
+                    ) : (
+                        <div className="w-full">
+                            <RazorpayCheckout planId={plan.id} planAmount={plan.amount} userEmail={user.email || ''} />
+                        </div>
+                    )}
                 </CardFooter>
             </Card>
         </div>
