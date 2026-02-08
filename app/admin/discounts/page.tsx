@@ -1,4 +1,4 @@
-import { getDiscounts, createDiscount } from "./actions"
+import { getDiscounts, createDiscount, deleteDiscount } from "./actions"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/table"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
-import { Plus, Tag } from "lucide-react"
+import { Plus, Tag, Trash2 } from "lucide-react"
 
 export const dynamic = 'force-dynamic'
 
@@ -27,6 +27,12 @@ export default async function DiscountsPage() {
     async function handleCreate(formData: FormData) {
         'use server'
         await createDiscount(formData)
+    }
+
+    async function handleDelete(formData: FormData) {
+        'use server'
+        const id = formData.get('id') as string
+        await deleteDiscount(id)
     }
 
     return (
@@ -119,12 +125,13 @@ export default async function DiscountsPage() {
                                 <TableHead>Value</TableHead>
                                 <TableHead>Valid Period</TableHead>
                                 <TableHead>Status</TableHead>
+                                <TableHead className="text-right">Actions</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {discounts.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={6} className="text-center py-12 text-muted-foreground italic">
+                                    <TableCell colSpan={7} className="text-center py-12 text-muted-foreground italic">
                                         No discount rules created.
                                     </TableCell>
                                 </TableRow>
@@ -160,6 +167,14 @@ export default async function DiscountsPage() {
                                             <Badge variant={d.active ? "default" : "secondary"} className={d.active ? "bg-green-600" : ""}>
                                                 {d.active ? "Active" : "Disabled"}
                                             </Badge>
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                            <form action={handleDelete} className="inline">
+                                                <input type="hidden" name="id" value={d.id} />
+                                                <Button type="submit" variant="ghost" size="sm" className="text-red-600 hover:text-red-700 hover:bg-red-50">
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            </form>
                                         </TableCell>
                                     </TableRow>
                                 ))

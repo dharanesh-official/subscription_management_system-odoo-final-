@@ -55,3 +55,47 @@ export async function toggleDiscountStatus(id: string, active: boolean) {
     await supabase.from('discounts').update({ active }).eq('id', id)
     revalidatePath('/admin/discounts')
 }
+
+export async function updateDiscount(id: string, formData: FormData) {
+    const supabase = await createClient()
+
+    const name = formData.get('name') as string
+    const description = formData.get('description') as string
+    const type = formData.get('type') as 'percentage' | 'fixed'
+    const value = Number(formData.get('value'))
+    const min_amount = Number(formData.get('min_amount') || 0)
+    const active = formData.get('active') === 'on'
+    const valid_from = formData.get('valid_from') as string
+    const valid_until = formData.get('valid_until') as string
+    const product_id = formData.get('product_id') as string
+
+    const { error } = await supabase.from('discounts').update({
+        name,
+        description: description || null,
+        type,
+        value,
+        min_amount,
+        active,
+        valid_from: valid_from || null,
+        valid_until: valid_until || null,
+        product_id: (product_id && product_id !== 'all') ? product_id : null
+    }).eq('id', id)
+
+    if (error) return { error: error.message }
+
+    revalidatePath('/admin/discounts')
+    return { success: true }
+}
+
+export async function deleteDiscount(id: string) {
+    const supabase = await createClient()
+    const { error } = await supabase.from('discounts').delete().eq('id', id)
+
+    if (error) {
+        if (error.code === '23503') return { error: 'Discount is linked to plans' }
+        return { error: error.message }
+    }
+
+    revalidatePath('/admin/discounts')
+    return { success: true }
+}
