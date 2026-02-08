@@ -3,6 +3,7 @@ import { createClient } from "@/utils/supabase/server"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import Link from "next/link"
 
 
 export const dynamic = 'force-dynamic'
@@ -107,6 +108,9 @@ export default async function CustomerDashboard() {
                         <CardTitle>Quick Actions</CardTitle>
                     </CardHeader>
                     <CardContent className="grid gap-2">
+                        <Link href="/pricing" className="w-full">
+                            <Button className="w-full bg-blue-600 hover:bg-blue-700">Browse Plans</Button>
+                        </Link>
                         <a href="mailto:support@subcheck.com" target="_blank" rel="noopener noreferrer">
                             <Button className="w-full" variant="outline">Contact Support</Button>
                         </a>
