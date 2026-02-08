@@ -111,12 +111,6 @@ export default async function CustomerDashboard() {
                         <Link href="/pricing" className="w-full">
                             <Button className="w-full bg-blue-600 hover:bg-blue-700">Browse Plans</Button>
                         </Link>
-                        <a href="mailto:support@subcheck.com" target="_blank" rel="noopener noreferrer">
-                            <Button className="w-full" variant="outline">Contact Support</Button>
-                        </a>
-                        <a href="mailto:support@subcheck.com?subject=Update Details" target="_blank" rel="noopener noreferrer">
-                            <Button className="w-full" variant="secondary">Update Details</Button>
-                        </a>
                     </CardContent>
                 </Card>
             </div>

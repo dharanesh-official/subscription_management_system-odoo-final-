@@ -9,7 +9,13 @@ export async function createTax(formData: FormData) {
     const rate = Number(formData.get('rate'))
     const active = formData.get('active') === 'on'
 
-    const { error } = await supabase.from('taxes').insert({ name, rate, active })
+    // Map 'rate' from form to 'percentage' column as well to fix not-null constraint error
+    const { error } = await supabase.from('taxes').insert({
+        name,
+        rate,
+        percentage: rate, // Add this line to satisfy the DB constraint
+        active
+    })
     if (error) return { error: error.message }
     revalidatePath('/admin/taxes')
     return { success: true }
