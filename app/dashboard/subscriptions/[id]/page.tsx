@@ -112,13 +112,29 @@ export default async function SubscriptionDetailsPage({
 
                         <div className="mt-8 border-t pt-4">
                             <h4 className="text-sm font-medium mb-2">Actions</h4>
-                            {subscription.status === 'active' ? (
-                                <Button variant="destructive" className="w-full sm:w-auto">Cancel Subscription</Button>
-                            ) : (
-                                <Link href={`/dashboard/checkout?plan=${subscription.plan_id}`}>
-                                    <Button className="w-full sm:w-auto">Renew / Pay Now</Button>
-                                </Link>
-                            )}
+                            <div className="flex flex-col gap-2">
+                                {subscription.status === 'active' || subscription.status === 'trialing' ? (
+                                    <Button variant="destructive" className="w-full sm:w-auto">Cancel Subscription</Button>
+                                ) : (
+                                    <Link href={`/dashboard/checkout?plan=${subscription.plan_id}`}>
+                                        <Button className="w-full sm:w-auto">Renew / Pay Now</Button>
+                                    </Link>
+                                )}
+
+                                {(subscription.status === 'trialing' || subscription.plans?.name.toLowerCase().includes('trial')) && (
+                                    <div className="flex flex-col gap-2 mt-4 pt-4 border-t border-dashed">
+                                        <div className="flex items-center gap-2 text-yellow-600">
+                                            <Clock className="h-4 w-4" />
+                                            <p className="text-sm font-medium">Enjoying the trial? Upgrade now!</p>
+                                        </div>
+                                        <Link href="/pricing?upgrade=true">
+                                            <Button className="w-full sm:w-auto bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white border-0">
+                                                Upgrade to Pro Plan 🚀
+                                            </Button>
+                                        </Link>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -162,6 +178,6 @@ export default async function SubscriptionDetailsPage({
                     </table>
                 </div>
             </div>
-        </div>
+        </div >
     )
 }
