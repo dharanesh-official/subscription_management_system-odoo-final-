@@ -1,4 +1,5 @@
 import { getDiscounts, createDiscount, deleteDiscount } from "./actions"
+import ClientMessages from './client-messages'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -37,6 +38,7 @@ export default async function DiscountsPage() {
 
     return (
         <div className="space-y-6">
+            <ClientMessages />
             <div className="flex justify-between items-center">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight">Discounts & Promos</h1>

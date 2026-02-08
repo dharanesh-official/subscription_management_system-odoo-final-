@@ -75,9 +75,13 @@ CREATE TABLE IF NOT EXISTS public.discounts (
     name text NOT NULL,
     type text CHECK (type IN ('percentage', 'fixed')),
     value numeric(10,2) NOT NULL,
+    description text,
+    product_id uuid REFERENCES public.products(id) ON DELETE SET NULL,
     active boolean DEFAULT true,
     min_amount numeric(10,2) DEFAULT 0,
     max_discount numeric(10,2),
+    valid_from date,
+    valid_until date,
     created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 

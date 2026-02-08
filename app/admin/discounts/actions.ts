@@ -44,10 +44,16 @@ export async function createDiscount(formData: FormData) {
         product_id: (product_id && product_id !== 'all') ? product_id : null
     })
 
-    if (error) return { error: error.message }
+    if (error) {
+        console.error('Create discount error:', error.message)
+        // Redirect back with error so the UI can show feedback
+        const { redirect } = await import('next/navigation')
+        return redirect(`/admin/discounts?error=${encodeURIComponent(error.message)}`)
+    }
 
     revalidatePath('/admin/discounts')
-    return { success: true }
+    const { redirect } = await import('next/navigation')
+    return redirect('/admin/discounts?success=1')
 }
 
 export async function toggleDiscountStatus(id: string, active: boolean) {
