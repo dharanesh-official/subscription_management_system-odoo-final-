@@ -81,6 +81,17 @@ export async function createStripeSession(planId: string) {
     origin = origin.includes('http') ? origin : `https://${origin}`
     origin = origin.endsWith('/') ? origin.slice(0, -1) : origin
 
+    // BYPASS STRIPE FOR TESTING
+    // If you want to simulate a successful payment without going to Stripe
+    const BYPASS_STRIPE = true
+
+    if (BYPASS_STRIPE) {
+        console.log("Bypassing Stripe for testing...")
+        return {
+            url: `${origin}/dashboard/checkout/success?session_id=BYPASS_STRIPE_TEST&subscription_id=${subscription.id}`
+        }
+    }
+
     try {
         const session = await stripe.checkout.sessions.create({
             payment_method_types: ['card'],
