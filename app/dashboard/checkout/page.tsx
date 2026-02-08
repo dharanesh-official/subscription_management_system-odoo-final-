@@ -5,7 +5,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Loader2 } from "lucide-react"
 
 import { redirect } from "next/navigation"
-import { RazorpayCheckout } from "./razorpay-checkout"
+
+import { StripeCheckoutButton } from "./stripe-checkout-button"
 
 export const dynamic = 'force-dynamic'
 
@@ -95,7 +96,7 @@ export default async function CheckoutPage({
                         </form>
                     ) : (
                         <div className="w-full">
-                            <RazorpayCheckout planId={plan.id} planAmount={plan.amount} userEmail={user.email || ''} />
+                            <StripeCheckoutButton planId={plan.id} amount={plan.amount} />
                         </div>
                     )}
                 </CardFooter>
