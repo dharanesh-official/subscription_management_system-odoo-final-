@@ -73,7 +73,7 @@ export async function createStripeSession(planId: string) {
 
     try {
         const session = await stripe.checkout.sessions.create({
-            payment_method_types: ['card'],
+            payment_method_types: ['card', 'upi'], // Added UPI support for India
             customer_email: user.email,
             line_items: [
                 {
