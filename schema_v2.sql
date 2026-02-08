@@ -72,6 +72,7 @@ CREATE TABLE IF NOT EXISTS public.payments (
 -- 6. Discount Management
 CREATE TABLE IF NOT EXISTS public.discounts (
     id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+    code text UNIQUE,
     name text NOT NULL,
     type text CHECK (type IN ('percentage', 'fixed')),
     value numeric(10,2) NOT NULL,

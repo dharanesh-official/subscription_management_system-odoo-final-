@@ -127,6 +127,83 @@ export async function createSubscription(formData: FormData) {
 
 export async function updateSubscriptionStatus(id: string, newStatus: string) {
     const supabase = await createClient()
-    await supabase.from('subscriptions').update({ status: newStatus }).eq('id', id)
+
+    // 1. Update status
+    const { error: updateError } = await supabase.from('subscriptions').update({ status: newStatus }).eq('id', id)
+
+    if (updateError) {
+        console.error('Error updating subscription status:', updateError)
+        // We might want to throw or return an error state here, but for now we log and return
+        return
+    }
+
+    // 2. Generate Invoice if status is active
+    if (newStatus === 'active') {
+        const { data: subscription } = await supabase.from('subscriptions').select('*').eq('id', id).single()
+
+        if (subscription) {
+            // Calculate subtotal
+            let subtotalAmount = 0
+
+            // Try to fetch lines
+            const { data: lines } = await supabase.from('subscription_lines').select('*').eq('subscription_id', id)
+
+            if (lines && lines.length > 0) {
+                subtotalAmount = lines.reduce((acc, line) => acc + (Number(line.unit_price) * Number(line.quantity)), 0)
+            } else {
+                // Fallback for subscriptions without lines (legacy or simple)
+                const { data: plan } = await supabase.from('plans').select('amount').eq('id', subscription.plan_id).single()
+                if (plan) {
+                    subtotalAmount = Number(plan.amount) * (subscription.quantity || 1) // created subscription might not have quantity logic fully set if strictly lines, but robust fallback
+                }
+            }
+
+            // Calculate Taxes
+            const { data: taxes } = await supabase.from('taxes').select('rate').eq('active', true)
+            let totalTaxPercent = taxes?.reduce((acc, t) => acc + Number(t.rate), 0) || 0
+
+            // Default tax if none found (optional safeguard)
+            if (totalTaxPercent === 0 && (!taxes || taxes.length === 0)) totalTaxPercent = 18
+
+            const taxAmount = subtotalAmount * (totalTaxPercent / 100)
+            const totalAmount = subtotalAmount + taxAmount
+
+            const dueDate = new Date()
+            dueDate.setDate(dueDate.getDate() + (subscription.payment_terms || 7))
+
+            // Create Invoice
+            const { data: invoice, error: invoiceError } = await supabase.from('invoices').insert({
+                subscription_id: subscription.id,
+                customer_id: subscription.customer_id,
+                amount_due: totalAmount,
+                currency: 'inr',
+                status: 'confirmed',
+                due_date: dueDate.toISOString(),
+            }).select().single()
+
+            if (invoice) {
+                // Send Email
+                const { data: customer } = await supabase.from('customers').select('name, email').eq('id', subscription.customer_id).single()
+                if (customer?.email) {
+                    await sendInvoiceEmail({
+                        customerName: customer.name,
+                        customerEmail: customer.email,
+                        invoiceId: invoice.id,
+                        invoiceNumber: invoice.id.slice(0, 8).toUpperCase(),
+                        amount: totalAmount,
+                        dueDate: dueDate.toISOString(),
+                        planName: 'Subscription Activation',
+                        quantity: 1,
+                        subtotal: subtotalAmount,
+                        tax: taxAmount,
+                        total: totalAmount,
+                    })
+                }
+            } else {
+                console.error('Error creating invoice on activation:', invoiceError)
+            }
+        }
+    }
+
     revalidatePath('/admin/subscriptions')
 }

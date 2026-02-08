@@ -122,6 +122,7 @@ export default async function DiscountsPage() {
                         <TableHeader>
                             <TableRow className="bg-muted/50">
                                 <TableHead>Discount Name</TableHead>
+                                <TableHead>Code</TableHead>
                                 <TableHead>Applies To</TableHead>
                                 <TableHead>Description</TableHead>
                                 <TableHead>Value</TableHead>
@@ -133,7 +134,7 @@ export default async function DiscountsPage() {
                         <TableBody>
                             {discounts.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={7} className="text-center py-12 text-muted-foreground italic">
+                                    <TableCell colSpan={8} className="text-center py-12 text-muted-foreground italic">
                                         No discount rules created.
                                     </TableCell>
                                 </TableRow>
@@ -141,6 +142,11 @@ export default async function DiscountsPage() {
                                 discounts.map((d) => (
                                     <TableRow key={d.id} className="hover:bg-muted/30 transition-colors">
                                         <TableCell className="font-medium">{d.name}</TableCell>
+                                        <TableCell>
+                                            <code className="text-xs bg-gray-100 px-2 py-1 rounded font-mono">
+                                                {d.code || 'N/A'}
+                                            </code>
+                                        </TableCell>
                                         <TableCell>
                                             {d.products ? (
                                                 <span className="text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded">
