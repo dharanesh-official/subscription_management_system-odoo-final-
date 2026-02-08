@@ -65,14 +65,14 @@ export async function createSubscriptionAction(formData: FormData) {
 
         if (subError) {
             console.error(subError)
-            throw new Error("Failed to create subscription: " + subError.message)
+            throw new Error(subError.message)
         }
 
     } catch (error: any) {
         if (error.message === 'NEXT_REDIRECT') throw error
         console.error("Subscription Error:", error)
         // Redirect with error
-        redirectPath = `/dashboard/checkout?plan=${planId}&error=Failed to start trial`
+        redirectPath = `/dashboard/checkout?plan=${planId}&error=${encodeURIComponent(error.message || 'Unknown error')}`
     }
 
     revalidatePath('/dashboard')
