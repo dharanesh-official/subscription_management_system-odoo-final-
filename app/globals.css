@@ -57,3 +57,35 @@
     @apply bg-background text-foreground;
   }
 }
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #invoice-content, #invoice-content * {
+    visibility: visible;
+  }
+  #invoice-content {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0;
+    padding: 20px;
+    box-shadow: none !important;
+    border: none !important;
+  }
+  
+  /* Hide sidebar and admin shell explicitly */
+  .grid.min-h-screen {
+    display: block;
+  }
+  aside, nav, header {
+    display: none !important;
+  }
+  
+  /* Ensure page breaks are handled */
+  .page-break { 
+    page-break-after: always;
+  }
+}

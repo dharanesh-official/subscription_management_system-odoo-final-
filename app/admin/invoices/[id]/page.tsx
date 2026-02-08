@@ -9,6 +9,7 @@ import { formatCurrency } from "@/lib/utils"
 import Link from "next/link"
 import InvoiceActions from "./actions-client"
 import RecordPaymentModal from "./record-payment-modal"
+import PrintTrigger from "@/components/print-trigger"
 
 export default async function InvoiceDetailsPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params
@@ -30,7 +31,7 @@ export default async function InvoiceDetailsPage({ params }: { params: Promise<{
     if (!invoice) notFound()
 
     return (
-        <div className="max-w-4xl mx-auto p-8 bg-card border shadow-sm rounded-lg mt-8 print:shadow-none print:border-none print:mt-0">
+        <div id="invoice-content" className="max-w-4xl mx-auto p-8 bg-card border shadow-sm rounded-lg mt-8 print:shadow-none print:border-none print:mt-0">
             <div className="flex justify-between items-start mb-8">
                 <div>
                     <h1 className="text-3xl font-bold">INVOICE</h1>
@@ -120,6 +121,7 @@ export default async function InvoiceDetailsPage({ params }: { params: Promise<{
                     <Link href="/admin/invoices">
                         <Button variant="outline">Back</Button>
                     </Link>
+                    <PrintTrigger />
                     <RecordPaymentModal
                         invoiceId={invoice.id}
                         amountDue={Number(invoice.amount_due) - Number(invoice.amount_paid || 0)}

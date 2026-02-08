@@ -119,7 +119,7 @@ export default async function InvoicesPage() {
                                                 </Button>
                                             </form>
                                         )}
-                                        <PrintInvoiceButton />
+                                        <PrintInvoiceButton invoiceId={inv.id} />
                                     </div>
                                 </TableCell>
                             </TableRow>
