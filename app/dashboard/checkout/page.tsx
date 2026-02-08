@@ -5,8 +5,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Loader2 } from "lucide-react"
 
 import { redirect } from "next/navigation"
-
 import { StripeCheckoutButton } from "./stripe-checkout-button"
+import { createSubscriptionAction } from "./actions"
 
 export const dynamic = 'force-dynamic'
 
@@ -49,8 +49,7 @@ export default async function CheckoutPage({
         )
     }
 
-    // Server Action import
-    const { createSubscriptionAction } = await import('./actions')
+
 
     return (
         <div className="container flex min-h-screen items-center justify-center py-12">
