@@ -20,17 +20,23 @@ export async function createDiscount(formData: FormData) {
     if (profile?.role !== 'admin') return { error: 'Only admins can create discounts' }
 
     const name = formData.get('name') as string
+    const description = formData.get('description') as string
     const type = formData.get('type') as 'percentage' | 'fixed'
     const value = Number(formData.get('value'))
     const min_amount = Number(formData.get('min_amount') || 0)
     const active = formData.get('active') === 'on'
+    const valid_from = formData.get('valid_from') as string
+    const valid_until = formData.get('valid_until') as string
 
     const { error } = await supabase.from('discounts').insert({
         name,
+        description: description || null,
         type,
         value,
         min_amount,
-        active
+        active,
+        valid_from: valid_from || null,
+        valid_until: valid_until || null
     })
 
     if (error) return { error: error.message }

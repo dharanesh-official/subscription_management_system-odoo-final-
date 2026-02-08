@@ -81,6 +81,15 @@ export default async function CheckoutPage({
                         </div>
                     </div>
 
+                    {plan.discounts && plan.discounts.active && plan.discounts.description && (
+                        <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                            <p className="text-sm font-medium text-green-800 flex items-center gap-2">
+                                <span className="text-lg">🎉</span>
+                                {plan.discounts.description}
+                            </p>
+                        </div>
+                    )}
+
                     <div className="space-y-2 text-sm">
                         <div className="flex justify-between">
                             <span className="text-muted-foreground">Start Date</span>
