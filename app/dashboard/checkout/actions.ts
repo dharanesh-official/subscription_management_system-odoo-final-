@@ -12,7 +12,7 @@ export async function createSubscriptionAction(formData: FormData) {
     // 1. Get User
     const { data: { user } } = await supabase.auth.getUser()
     if (!user || !user.email) {
-        redirect('/auth/login?error=Please log in to subscribe')
+        return redirect('/auth/login?error=Please log in to subscribe')
     }
 
     // 2. Get or Create Customer
@@ -72,5 +72,5 @@ export async function createSubscriptionAction(formData: FormData) {
     }
 
     revalidatePath('/dashboard')
-    redirect('/dashboard/subscriptions?success=Subscription created')
+    return redirect('/dashboard/subscriptions?success=Subscription created')
 }
