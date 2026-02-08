@@ -91,7 +91,7 @@ export default async function CheckoutPage({
                         <form action={createSubscriptionAction} className="w-full">
                             <input type="hidden" name="plan_id" value={plan.id} />
                             <Button type="submit" className="w-full" size="lg">
-                                Start Free Trial
+                                Start Free Trial ({plan.trial_period_days} Days)
                             </Button>
                         </form>
                     ) : (

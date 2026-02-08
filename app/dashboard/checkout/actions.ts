@@ -12,7 +12,7 @@ export async function createSubscriptionAction(formData: FormData) {
     // 1. Get User
     const { data: { user } } = await supabase.auth.getUser()
     if (!user || !user.email) {
-        return redirect('/auth/login?error=Please log in to subscribe')
+        redirect('/auth/login?error=Please log in to subscribe')
     }
 
     // 2. Get or Create Customer
@@ -37,7 +37,7 @@ export async function createSubscriptionAction(formData: FormData) {
 
         if (createError) {
             console.error(createError)
-            return { error: 'Failed to create customer profile' }
+            throw new Error('Failed to create customer profile')
         }
         customer = newCustomer
     }
@@ -68,7 +68,7 @@ export async function createSubscriptionAction(formData: FormData) {
 
     if (subError) {
         console.error(subError)
-        return { error: 'Failed to create subscription' }
+        throw new Error('Failed to create subscription')
     }
 
     revalidatePath('/dashboard')
