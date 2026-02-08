@@ -14,7 +14,8 @@ import { formatCurrency } from "@/lib/utils"
 import { sendInvoiceManually, cancelInvoice, confirmInvoice, markInvoicePaid } from "./actions"
 import SendInvoiceButton from "./send-button"
 import PrintInvoiceButton from "./print-button"
-import { XCircle } from "lucide-react"
+import Link from "next/link"
+import { XCircle, Eye } from "lucide-react"
 
 export default async function InvoicesPage() {
     const supabase = await createClient()
@@ -108,6 +109,11 @@ export default async function InvoicesPage() {
                                                 <Button size="sm" className="bg-green-600 hover:bg-green-700">Mark Paid</Button>
                                             </form>
                                         )}
+                                        <Link href={`/admin/invoices/${inv.id}`}>
+                                            <Button variant="ghost" size="icon" className="h-8 w-8" title="View Details">
+                                                <Eye className="h-4 w-4" />
+                                            </Button>
+                                        </Link>
                                         <SendInvoiceButton invoiceId={inv.id} customerEmail={inv.customers?.email} />
                                         {inv.status !== 'cancelled' && inv.status !== 'paid' && (
                                             <form action={async () => {

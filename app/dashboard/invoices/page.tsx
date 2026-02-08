@@ -12,7 +12,7 @@ import {
 import Link from "next/link"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { MousePointerClick } from "lucide-react"
+import { MousePointerClick, Eye, Printer } from "lucide-react"
 
 export default async function CustomerInvoicesPage() {
     const supabase = await createClient()
@@ -80,10 +80,18 @@ export default async function CustomerInvoicesPage() {
                                     </Badge>
                                 </TableCell>
                                 <TableCell>
-                                    {/* Link to detail page if implemented or maybe download directly? */}
-                                    <Button variant="ghost" size="icon" disabled>
-                                        <MousePointerClick className="h-4 w-4" />
-                                    </Button>
+                                    <div className="flex gap-2 justify-end">
+                                        <Link href={`/dashboard/invoices/${inv.id}`} title="View Details">
+                                            <Button variant="ghost" size="icon">
+                                                <Eye className="h-4 w-4" />
+                                            </Button>
+                                        </Link>
+                                        <Link href={`/dashboard/invoices/${inv.id}`} title="Print Invoice">
+                                            <Button variant="ghost" size="icon">
+                                                <Printer className="h-4 w-4" />
+                                            </Button>
+                                        </Link>
+                                    </div>
                                 </TableCell>
                             </TableRow>
                         )))}
