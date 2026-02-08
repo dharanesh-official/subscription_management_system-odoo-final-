@@ -59,8 +59,7 @@ export async function createSubscriptionAction(formData: FormData) {
             status: status,
             start_date: startDate.toISOString(),
             currency: 'inr',
-            quantity: 1,
-            billing_address: 'Default Address'
+            quantity: 1
         })
 
         if (subError) {
