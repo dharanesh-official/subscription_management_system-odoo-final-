@@ -50,9 +50,15 @@ export default async function CustomerDashboard() {
             </div>
 
             {!customer ? (
-                <Card className="bg-amber-50 border-amber-200">
-                    <CardContent className="pt-6">
-                        <p className="text-amber-800">Your account is not linked to a customer profile yet. Please contact support.</p>
+                <Card className="bg-blue-50 border-blue-200">
+                    <CardHeader>
+                        <CardTitle className="text-blue-700">Welcome to SubCheck!</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <p className="text-blue-800">Complete your profile setup by subscribing to a plan.</p>
+                        <a href="/pricing">
+                            <Button className="w-full sm:w-auto">View Plans & Subscribe</Button>
+                        </a>
                     </CardContent>
                 </Card>
             ) : null}
@@ -86,12 +92,10 @@ export default async function CustomerDashboard() {
                                 </div>
                             </div>
                         ) : (
-                            <div className="py-8 text-center text-muted-foreground bg-muted/20 rounded-lg border border-dashed">
-                                No active subscription found.
-                                <br />
-                                <br />
-                                <a href="mailto:sales@subcheck.com">
-                                    <Button variant="link" className="mt-2 text-primary">Contact Sales to Subscribe</Button>
+                            <div className="flex flex-col items-center justify-center py-8 space-y-4 text-center text-muted-foreground bg-muted/20 rounded-lg border border-dashed">
+                                <p>No active subscription found.</p>
+                                <a href="/pricing">
+                                    <Button size="lg" className="mt-2">Subscribe Now</Button>
                                 </a>
                             </div>
                         )}
@@ -145,6 +149,6 @@ export default async function CustomerDashboard() {
                     )}
                 </CardContent>
             </Card>
-        </div>
+        </div >
     )
 }
