@@ -57,7 +57,7 @@ export async function createSubscriptionAction(formData: FormData) {
             customer_id: customer.id,
             plan_id: planId,
             status: status,
-            start_date: startDate.toISOString(),
+            current_period_start: startDate.toISOString(),
 
         })
 
